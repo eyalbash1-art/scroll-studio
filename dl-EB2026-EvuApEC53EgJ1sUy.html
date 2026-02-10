@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>הורדת המגילה שלך | תפילה מהשקט</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&display=swap" rel="stylesheet">
+  <script>tailwind.config = { darkMode: "class" };</script>
+  <style>
+    * { font-family: 'Frank Ruhl Libre', serif; margin: 0; padding: 0; box-sizing: border-box; }
+    .hebrew-prayer { font-family: 'Frank Ruhl Libre', serif; font-weight: 700; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    .animate-in { animation: fadeIn 0.6s ease-out forwards; }
+    @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 20px rgba(217,119,6,0.3); } 50% { box-shadow: 0 0 40px rgba(217,119,6,0.6); } }
+    .glow { animation: pulse-glow 2s ease-in-out infinite; }
+  </style>
+</head>
+<body class="bg-[#1a1a1a] min-h-screen">
+  <div id="root"></div>
+  <!-- Hidden canvas for rendering -->
+  <canvas id="renderCanvas" style="display:none;"></canvas>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    /* ===== LETTER MAP ===== */
+    const LETTER_MAP = {
+      'א':'אלוהים','ב':'בורא','ג':'גאולה','ד':'דבקות','ה':'השם','ו':'וודאות','ז':'זין','ח':'חמלתו',
+      'ט':'טוהרו','י':'יה','כ':'כוחו','ך':'כוחו','ל':'לב','מ':'ממלכותו','ם':'ממלכותו','נ':'נשמתך',
+      'ן':'נשמתך','ס':'סלה','ע':'עליון','פ':'פדותו','ף':'פדותו','צ':'צדקן','ץ':'צדקן','ק':'קרבתו',
+      'ר':'רצונו','ש':'שכינה','ת':'תפילתך'
+    };
+
+    const getInterpretationLine = (name) => {
+      if (!name.trim()) return '';
+      return name.replace(/\s/g,'').split('').map(l => LETTER_MAP[l] || 'אור').join(' - ');
+    };
+
+    const getSpiritualBlessing = (name, gender) => {
+      if (!name.trim()) return '';
+      const m = gender === 'male';
+      const letters = name.replace(/\s/g,'').split('');
+      const words = letters.map(l => LETTER_MAP[l] || 'אור');
+      const wordsStr = words.join(' ');
+      const openings = [
+        `${name} נשמה —`, `${name} ${m?'יקר':'יקרה'} —`,
+        `${name}, ${m?'תשמע':'תשמעי'} —`, `${name} —`,
+      ];
+      const opening = openings[letters.length % openings.length];
+      const idx = (letters.length * 7 + letters[0].charCodeAt(0)) % 10;
+      const t = [
+`${wordsStr} —\nזה הסימן שהשם הניח לך בכוונה שלמה.\nהוא מדבר ${m?'אליך':'אלייך'} באהבה,\nואין ספק בכך כי הוא מחובר ${m?'אליך':'אלייך'}.\nהכול אחד ואין הפרדה.\n${m?'עצום':'עצמי'} עיניים, ${m?'נשום':'נשמי'} עמוק,\nו${m?'תקשיב':'תקשיבי'} לו — כי הוא בלב שלך.`,
+`${wordsStr} —\nהשם בלב שלך יודע ${m?'אותך':'אותך'}.\nהוא רואה ${m?'אותך מושלם ושלם':'אותך מושלמת ושלמה'}.\nעכשיו תורך לראות גם את ${m?'עצמך':'עצמך'} ככה.\n${m?'עצום':'עצמי'} עיניים, ${m?'נשום':'נשמי'},\nו${m?'תדע':'תדעי'} — הוא אוהב ${m?'אותך':'אותך'}\nומחובר ${m?'אליך':'אלייך'} בלב.`,
+`יש לך סימן ממנו בלב שלך:\n${wordsStr}.\nהוא הגואל בלב שלך,\nשגואל ${m?'אותך':'אותך'} מהבורות ומהשיכחה.\nהוא יודע ${m?'אותך':'אותך'}.\nרק ${m?'תקשיב':'תקשיבי'} לו ו${m?'תאמין':'תאמיני'} בו —\nהכול משתנה. תודה נשמה.`,
+`${wordsStr} — שם מהמם.\nהמפתח כתוב בשם שלך.\nנוכחות מאפשרת לך לראות את האמת.\nהקשבה ללב ונשימה,\nכי השם בוודאות אוהב ${m?'אותך':'אותך'}\nומחובר ${m?'אליך':'אלייך'}.\nהכול אחד ואין אחר מלבדו.`,
+`${wordsStr} —\nהשם נתן לך סימן שהוא בלב שלך\nוהוא התשובה.\nבלב שלך השם קיים\nו${m?'כשאתה מחובר':'כשאת מחוברת'} אליו\n${m?'אתה יודע':'את יודעת'} את אהבתו.\n${m?'היה נוכח':'היי נוכחת'}, ${m?'נשום':'נשמי'} עמוק,\nו${m?'תדע':'תדעי'} — אין ספק בכלל.`,
+`${wordsStr} — זה לא מקרה.\nהשמיים, המרומים, נמצאים בלב שלך.\nהשם לא למעלה בשמיים —\nהוא בלב שלך.\n${m?'עצום':'עצמי'} עיניים,\n${m?'תקשיב':'תקשיבי'} לקול השקט הפנימי,\nו${m?'תדע':'תדעי'} אותו. כי הוא יודע ${m?'אותך':'אותך'}.`,
+`${wordsStr} —\nהסימן שלך לדעת בוודאות את הבורא.\nהוא מחכה לך בלב,\n${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?\nכי הוא השאיר לך סימן בכוונה שלמה.\n${m?'כשאתה נוכח':'כשאת נוכחת'} ו${m?'נושם':'נושמת'} —\n${m?'אתה יודע':'את יודעת'} אותו. הוא אחד ${m?'ואתה אחד':'ואת אחת'} איתו.`,
+`${wordsStr} — מתנה של אור ואהבה.\nהשם בלב שלך, לא בחוץ.\nהוא מעל הזמן ובלתי פגיע.\nאם הוא בלב שלך — גם ${m?'אתה':'את'} ${m?'כזה':'כזאת'}.\nרק ${m?'תכיר':'תכירי'} בו.\n${m?'עצום':'עצמי'} עיניים, ${m?'נשום':'נשמי'},\nו${m?'תדע':'תדעי'}. אין אחר מלבדו.`,
+`${wordsStr} —\nהשם יודע ${m?'אותך':'אותך'} והוא הגואל שלך\nשנמצא בלב עכשיו.\n${m?'דע':'דעי'} את ${m?'עצמך':'עצמך'}.\nכי מי ש${m?'מכיר':'מכירה'} את הלב\n${m?'מכיר':'מכירה'} את השם.\nהכול אחד — ואין הפרדה.`,
+`${wordsStr} —\nהשם דובר ${m?'אליך':'אלייך'} בוודאות ובאהבה.\nמעגל אין סופי של אור.\nהוא אחד ${m?'ואתה אחד':'ואת אחת'} איתו בלב.\n${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?\nכי הוא ורק הוא האור —\nאין אחר מלבדו.`
+      ];
+      return `${opening}\n${t[idx]}`;
+    };
+
+    /* ===== CANVAS SCROLL RENDERER ===== */
+    const renderScrollToCanvas = (canvas, name, gender, width, height) => {
+      const ctx = canvas.getContext('2d');
+      canvas.width = width;
+      canvas.height = height;
+
+      const scale = width / 1000; // Normalize to 1000px base width
+      const s = (v) => v * scale; // Scale helper
+
+      // === PARCHMENT BACKGROUND ===
+      const bodyTop = s(70);
+      const bodyBottom = height - s(70);
+
+      // Main parchment body
+      const parchGrad = ctx.createLinearGradient(0, bodyTop, 0, bodyBottom);
+      parchGrad.addColorStop(0, '#d4b88a');
+      parchGrad.addColorStop(0.05, '#e8d4a8');
+      parchGrad.addColorStop(0.15, '#f5e6c8');
+      parchGrad.addColorStop(0.5, '#f0debb');
+      parchGrad.addColorStop(0.85, '#f5e6c8');
+      parchGrad.addColorStop(0.95, '#e8d4a8');
+      parchGrad.addColorStop(1, '#d4b88a');
+      ctx.fillStyle = parchGrad;
+      ctx.fillRect(0, bodyTop, width, bodyBottom - bodyTop);
+
+      // Subtle side shadows
+      const leftShadow = ctx.createLinearGradient(0, 0, s(40), 0);
+      leftShadow.addColorStop(0, 'rgba(139,107,66,0.2)');
+      leftShadow.addColorStop(1, 'transparent');
+      ctx.fillStyle = leftShadow;
+      ctx.fillRect(0, bodyTop, s(40), bodyBottom - bodyTop);
+
+      const rightShadow = ctx.createLinearGradient(width, 0, width - s(40), 0);
+      rightShadow.addColorStop(0, 'rgba(139,107,66,0.2)');
+      rightShadow.addColorStop(1, 'transparent');
+      ctx.fillStyle = rightShadow;
+      ctx.fillRect(width - s(40), bodyTop, s(40), bodyBottom - bodyTop);
+
+      // Subtle texture lines
+      ctx.strokeStyle = 'rgba(139,107,66,0.04)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < width; x += s(6)) {
+        ctx.beginPath();
+        ctx.moveTo(x, bodyTop);
+        ctx.lineTo(x, bodyBottom);
+        ctx.stroke();
+      }
+
+      // === SCROLL ROLLS ===
+      const drawRoll = (y, h) => {
+        const rollGrad = ctx.createLinearGradient(0, y, 0, y + h);
+        rollGrad.addColorStop(0, '#a88454');
+        rollGrad.addColorStop(0.15, '#c9a46c');
+        rollGrad.addColorStop(0.3, '#e0c48e');
+        rollGrad.addColorStop(0.5, '#d4b07a');
+        rollGrad.addColorStop(0.7, '#c9a46c');
+        rollGrad.addColorStop(0.85, '#a88454');
+        rollGrad.addColorStop(1, '#8c6a42');
+
+        // Main roll body (ellipse)
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(width / 2, y + h / 2, width * 0.53, h / 2, 0, 0, Math.PI * 2);
+        ctx.fillStyle = rollGrad;
+        ctx.fill();
+
+        // Roll shadow
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+        ctx.shadowBlur = s(15);
+        ctx.shadowOffsetY = y < height / 2 ? s(5) : -s(5);
+        ctx.fill();
+        ctx.restore();
+
+        // Roll side knobs
+        const knobGrad = ctx.createLinearGradient(0, y + h * 0.3, 0, y + h * 0.7);
+        knobGrad.addColorStop(0, '#6b5535');
+        knobGrad.addColorStop(0.5, '#8c6a42');
+        knobGrad.addColorStop(1, '#6b5535');
+        ctx.fillStyle = knobGrad;
+        // Left knob
+        ctx.fillRect(-s(15), y + h * 0.3, s(80), h * 0.4);
+        // Right knob
+        ctx.fillRect(width - s(65), y + h * 0.3, s(80), h * 0.4);
+      };
+
+      drawRoll(0, s(80));
+      drawRoll(height - s(80), s(80));
+
+      // === TEXT CONTENT ===
+      ctx.textAlign = 'center';
+      ctx.direction = 'rtl';
+
+      const centerX = width / 2;
+      let currentY = bodyTop + s(80);
+
+      // Helper: draw centered text
+      const drawText = (text, y, fontSize, color, weight = '700') => {
+        ctx.font = `${weight} ${fontSize}px 'Frank Ruhl Libre', serif`;
+        ctx.fillStyle = color;
+        ctx.fillText(text, centerX, y);
+      };
+
+      // Helper: draw divider
+      const drawDivider = (y, w) => {
+        const divGrad = ctx.createLinearGradient(centerX - w/2, 0, centerX + w/2, 0);
+        divGrad.addColorStop(0, 'transparent');
+        divGrad.addColorStop(0.5, '#8c6a42');
+        divGrad.addColorStop(1, 'transparent');
+        ctx.strokeStyle = divGrad;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(centerX - w/2, y);
+        ctx.lineTo(centerX + w/2, y);
+        ctx.stroke();
+      };
+
+      // Opening line
+      drawText('באותיות שמך הושם סימן מהשם', currentY, s(22), '#8c6a42', '700');
+      currentY += s(40);
+
+      // Divider
+      drawDivider(currentY, s(200));
+      currentY += s(45);
+
+      // NAME - big and bold, with auto-scale
+      const cleanName = name.replace(/\s/g, '');
+      const displayName = cleanName.split('').join('  ');
+      let nameSize = s(cleanName.length <= 3 ? 120 : cleanName.length <= 5 ? 95 : 75);
+      
+      // Measure and scale down if needed
+      ctx.font = `900 ${nameSize}px 'Frank Ruhl Libre', serif`;
+      let nameWidth = ctx.measureText(displayName).width;
+      const maxNameWidth = width * 0.85;
+      if (nameWidth > maxNameWidth) {
+        nameSize = nameSize * (maxNameWidth / nameWidth);
+      }
+      
+      drawText(displayName, currentY, nameSize, '#2b1810', '900');
+      currentY += s(50);
+
+      // Interpretation line - auto-scaled
+      const interpLine = getInterpretationLine(name);
+      let interpSize = s(32);
+      ctx.font = `700 ${interpSize}px 'Frank Ruhl Libre', serif`;
+      let interpWidth = ctx.measureText(interpLine).width;
+      const maxInterpWidth = width * 0.9;
+      if (interpWidth > maxInterpWidth) {
+        interpSize = interpSize * (maxInterpWidth / interpWidth);
+      }
+      drawText(interpLine, currentY, interpSize, '#3d2b1f', '700');
+      currentY += s(45);
+
+      // Divider
+      drawDivider(currentY, s(140));
+      currentY += s(40);
+
+      // Blessing text - multi-line
+      const blessing = getSpiritualBlessing(name, gender);
+      const blessingLines = blessing.split('\n');
+      const blessingSize = s(24);
+      ctx.font = `400 ${blessingSize}px 'Frank Ruhl Libre', serif`;
+
+      blessingLines.forEach(line => {
+        if (line.trim()) {
+          drawText(line.trim(), currentY, blessingSize, '#2b1810', '400');
+        }
+        currentY += s(32);
+      });
+
+      currentY += s(15);
+
+      // Bottom divider
+      drawDivider(currentY, s(200));
+      currentY += s(30);
+
+      // Copyright
+      drawText('כל הזכויות שמורות לאיל באש | תפילה מהשקט', currentY, s(16), 'rgba(140,106,66,0.6)', '700');
+    };
+
+    /* ===== DOWNLOAD FUNCTIONS ===== */
+    const downloadImage = (name, gender, format) => {
+      const canvas = document.getElementById('renderCanvas');
+      let w, h, filename;
+      
+      if (format === 'phone') {
+        w = 1170; h = 2532; // iPhone 14 Pro
+        filename = `מגילת_${name}_טלפון.png`;
+      } else if (format === 'a4-single') {
+        w = 2480; h = 3508; // A4 at 300dpi
+        filename = `מגילת_${name}_A4.png`;
+      } else {
+        // a4-quad: render 4 on one A4
+        w = 2480; h = 3508;
+        filename = `מגילת_${name}_4בדף.png`;
+      }
+
+      if (format === 'a4-quad') {
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        // White background
+        ctx.fillStyle = '#f5f0e8';
+        ctx.fillRect(0, 0, w, h);
+
+        // Render 4 cards
+        const tempCanvas = document.createElement('canvas');
+        const cardW = (w - 60) / 2;
+        const cardH = (h - 60) / 2;
+        renderScrollToCanvas(tempCanvas, name, gender, cardW, cardH);
+        
+        ctx.drawImage(tempCanvas, 20, 20, cardW, cardH);
+        ctx.drawImage(tempCanvas, cardW + 40, 20, cardW, cardH);
+        ctx.drawImage(tempCanvas, 20, cardH + 40, cardW, cardH);
+        ctx.drawImage(tempCanvas, cardW + 40, cardH + 40, cardW, cardH);
+      } else {
+        renderScrollToCanvas(canvas, name, gender, w, h);
+      }
+
+      // Download
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png', 1.0);
+      link.click();
+    };
+
+    /* ===== ICONS ===== */
+    const Download = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
+    const CheckCircle = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
+    const FileText = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>;
+    const LayoutGrid = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>;
+    const Smartphone = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>;
+    const ShieldCheck = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>;
+
+    /* ===== MAIN PAGE ===== */
+    const App = () => {
+      // Read URL params
+      const params = new URLSearchParams(window.location.search);
+      const [name, setName] = useState(params.get('name') || 'איל');
+      const [gender, setGender] = useState(params.get('gender') || 'male');
+      const [downloading, setDownloading] = useState(null);
+      const [fontsLoaded, setFontsLoaded] = useState(false);
+
+      useEffect(() => {
+        // Wait for fonts to load before enabling downloads
+        document.fonts.ready.then(() => setFontsLoaded(true));
+      }, []);
+
+      const handleDownload = (format) => {
+        setDownloading(format);
+        // Small delay to ensure fonts are rendered
+        setTimeout(() => {
+          downloadImage(name, gender, format);
+          setTimeout(() => setDownloading(null), 1000);
+        }, 200);
+      };
+
+      return (
+        <div className="min-h-screen bg-[#1a1a1a] text-white" style={{ direction: 'rtl' }}>
+          {/* Header */}
+          <header className="bg-black/50 backdrop-blur-2xl border-b border-white/10 px-6 py-4 flex justify-between items-center">
+            <div className="flex flex-col">
+              <h1 className="text-xl font-bold text-white hebrew-prayer">סטודיו תפילה מהשקט</h1>
+              <span className="text-[9px] text-amber-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                <ShieldCheck size={10} /> OFFICIAL EYAL BASH STUDIO
+              </span>
+            </div>
+            <div className="flex items-center gap-2 bg-green-600/20 border border-green-500/30 rounded-full px-4 py-2">
+              <CheckCircle size={16} className="text-green-400" />
+              <span className="text-green-400 text-xs font-bold hebrew-prayer">התשלום אושר ✓</span>
+            </div>
+          </header>
+
+          {/* Main content */}
+          <main className="max-w-4xl mx-auto px-6 py-12">
+            {/* Success message */}
+            <div className="text-center mb-12 animate-in">
+              <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 glow">
+                <CheckCircle size={40} className="text-green-400" />
+              </div>
+              <h2 className="text-3xl md:text-4xl font-black text-white mb-3 hebrew-prayer">
+                המגילה שלך מוכנה, {name}!
+              </h2>
+              <p className="text-amber-200/60 text-lg hebrew-prayer" style={{ fontWeight: 400 }}>
+                תודה על הרכישה. הקבצים שלך מוכנים להורדה — ללא סימן מים.
+              </p>
+            </div>
+
+            {/* Preview of what they get */}
+            <div className="bg-white/5 rounded-3xl border border-white/10 p-8 mb-10 animate-in" style={{ animationDelay: '0.2s' }}>
+              <div className="text-center mb-6">
+                <div className="text-lg font-bold text-amber-400 hebrew-prayer mb-2">תצוגה מקדימה של המגילה</div>
+                <div className="text-amber-200/40 text-sm hebrew-prayer" style={{ fontWeight: 400 }}>
+                  שם: <span className="text-white font-bold">{name}</span> | 
+                  ניסוח: <span className="text-white font-bold">{gender === 'male' ? 'זכר' : 'נקבה'}</span>
+                </div>
+              </div>
+              
+              {/* Scroll content preview (text only) */}
+              <div className="bg-[#f5e6c8] rounded-2xl p-8 max-w-md mx-auto text-center" style={{ color: '#2b1810' }}>
+                <div className="text-xs mb-3" style={{ color: '#8c6a42' }}>באותיות שמך הושם סימן מהשם</div>
+                <div className="text-4xl font-black mb-2 hebrew-prayer" style={{ letterSpacing: '8px' }}>
+                  {name.replace(/\s/g,'').split('').join(' ')}
+                </div>
+                <div className="text-sm font-bold mb-4 hebrew-prayer" style={{ color: '#3d2b1f' }}>
+                  {getInterpretationLine(name)}
+                </div>
+                <div className="text-xs leading-relaxed whitespace-pre-line" style={{ color: '#2b1810', fontWeight: 400 }}>
+                  {getSpiritualBlessing(name, gender)}
+                </div>
+                <div className="text-[8px] mt-4" style={{ color: 'rgba(140,106,66,0.5)' }}>
+                  כל הזכויות שמורות לאיל באש | תפילה מהשקט
+                </div>
+              </div>
+            </div>
+
+            {/* Download buttons */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 animate-in" style={{ animationDelay: '0.4s' }}>
+              {/* A4 Single */}
+              <button 
+                onClick={() => handleDownload('a4-single')}
+                disabled={!fontsLoaded || downloading === 'a4-single'}
+                className="group bg-gradient-to-b from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-2xl p-6 flex flex-col items-center gap-4 transition-all active:scale-95 disabled:opacity-50 shadow-[0_10px_30px_rgba(217,119,6,0.3)]"
+              >
+                <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/20 transition-all">
+                  <FileText size={28} />
+                </div>
+                <div>
+                  <div className="font-bold text-lg hebrew-prayer">A4 מלא</div>
+                  <div className="text-amber-200/60 text-xs">קלף אחד על דף שלם</div>
+                </div>
+                <div className="bg-white/20 rounded-full px-5 py-2 flex items-center gap-2 text-sm font-bold">
+                  <Download size={16} />
+                  {downloading === 'a4-single' ? 'מוריד...' : 'הורד PNG'}
+                </div>
+              </button>
+
+              {/* A4 Quad */}
+              <button 
+                onClick={() => handleDownload('a4-quad')}
+                disabled={!fontsLoaded || downloading === 'a4-quad'}
+                className="group bg-gradient-to-b from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-2xl p-6 flex flex-col items-center gap-4 transition-all active:scale-95 disabled:opacity-50 shadow-[0_10px_30px_rgba(217,119,6,0.3)]"
+              >
+                <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/20 transition-all">
+                  <LayoutGrid size={28} />
+                </div>
+                <div>
+                  <div className="font-bold text-lg hebrew-prayer">4 בדף A4</div>
+                  <div className="text-amber-200/60 text-xs">ארבעה קלפים לגזירה</div>
+                </div>
+                <div className="bg-white/20 rounded-full px-5 py-2 flex items-center gap-2 text-sm font-bold">
+                  <Download size={16} />
+                  {downloading === 'a4-quad' ? 'מוריד...' : 'הורד PNG'}
+                </div>
+              </button>
+
+              {/* Phone Wallpaper */}
+              <button 
+                onClick={() => handleDownload('phone')}
+                disabled={!fontsLoaded || downloading === 'phone'}
+                className="group bg-gradient-to-b from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white rounded-2xl p-6 flex flex-col items-center gap-4 transition-all active:scale-95 disabled:opacity-50 shadow-[0_10px_30px_rgba(217,119,6,0.3)]"
+              >
+                <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center group-hover:bg-white/20 transition-all">
+                  <Smartphone size={28} />
+                </div>
+                <div>
+                  <div className="font-bold text-lg hebrew-prayer">שומר מסך</div>
+                  <div className="text-amber-200/60 text-xs">מותאם לאייפון / אנדרויד</div>
+                </div>
+                <div className="bg-white/20 rounded-full px-5 py-2 flex items-center gap-2 text-sm font-bold">
+                  <Download size={16} />
+                  {downloading === 'phone' ? 'מוריד...' : 'הורד PNG'}
+                </div>
+              </button>
+            </div>
+
+            {/* Instructions */}
+            <div className="mt-10 bg-white/5 rounded-2xl border border-white/10 p-6 text-center animate-in" style={{ animationDelay: '0.6s' }}>
+              <div className="text-amber-400 font-bold mb-3 hebrew-prayer">💡 טיפים להדפסה</div>
+              <div className="text-amber-200/50 text-sm leading-relaxed hebrew-prayer" style={{ fontWeight: 400 }}>
+                מומלץ להדפיס על נייר עבה 250 גרם בגוון שמנת למראה האותנטי ביותר.<br/>
+                לשומר מסך — שמרו את התמונה בגלריה והגדירו כטפט.
+              </div>
+            </div>
+
+            {/* Font loading indicator */}
+            {!fontsLoaded && (
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-black/80 text-amber-400 px-6 py-3 rounded-full text-sm font-bold hebrew-prayer border border-amber-500/20">
+                ⏳ טוען פונטים...
+              </div>
+            )}
+          </main>
+
+          {/* Footer */}
+          <footer className="bg-black/90 text-white py-10 px-6 text-center border-t border-white/5">
+            <div className="text-[10px] opacity-40 uppercase tracking-[6px] font-bold leading-loose">
+              © {new Date().getFullYear()} איל באש — כל הזכויות שמורות | תפילה מהשקט
+            </div>
+          </footer>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
