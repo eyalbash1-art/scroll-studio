@@ -307,8 +307,10 @@
     const App = () => {
       // Read URL params
       const params = new URLSearchParams(window.location.search);
-      const [name, setName] = useState(params.get('name') || 'איל');
-      const [gender, setGender] = useState(params.get('gender') || 'male');
+      const savedName = (() => { try { return localStorage.getItem('scroll_name') || ''; } catch(e) { return ''; } })();
+      const savedGender = (() => { try { return localStorage.getItem('scroll_gender') || 'male'; } catch(e) { return 'male'; } })();
+      const [name, setName] = useState(params.get('name') || savedName);
+      const [gender, setGender] = useState(params.get('gender') || savedGender);
       const [downloading, setDownloading] = useState(null);
       const [fontsLoaded, setFontsLoaded] = useState(false);
 
