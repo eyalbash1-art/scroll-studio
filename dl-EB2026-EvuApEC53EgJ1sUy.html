@@ -162,7 +162,8 @@
       ctx.direction = 'rtl';
 
       const centerX = width / 2;
-      let currentY = bodyTop + s(80);
+      const contentHeight = height - bodyTop * 2;
+      let currentY = bodyTop + contentHeight * 0.12; // Start 12% down from top roll
 
       // Helper: draw centered text
       const drawText = (text, y, fontSize, color, weight = '700') => {
@@ -187,11 +188,11 @@
 
       // Opening line
       drawText('באותיות שמך הושם סימן מהשם', currentY, s(22), '#8c6a42', '700');
-      currentY += s(40);
+      currentY += s(55);
 
       // Divider
       drawDivider(currentY, s(200));
-      currentY += s(45);
+      currentY += s(65);
 
       // NAME - big and bold, with auto-scale
       const cleanName = name.replace(/\s/g, '');
@@ -207,7 +208,7 @@
       }
       
       drawText(displayName, currentY, nameSize, '#2b1810', '900');
-      currentY += s(50);
+      currentY += s(75);
 
       // Interpretation line - auto-scaled
       const interpLine = getInterpretationLine(name);
@@ -219,11 +220,11 @@
         interpSize = interpSize * (maxInterpWidth / interpWidth);
       }
       drawText(interpLine, currentY, interpSize, '#3d2b1f', '700');
-      currentY += s(45);
+      currentY += s(60);
 
       // Divider
       drawDivider(currentY, s(140));
-      currentY += s(40);
+      currentY += s(55);
 
       // Blessing text - multi-line
       const blessing = getSpiritualBlessing(name, gender);
@@ -235,14 +236,14 @@
         if (line.trim()) {
           drawText(line.trim(), currentY, blessingSize, '#2b1810', '400');
         }
-        currentY += s(32);
+        currentY += s(38);
       });
 
-      currentY += s(15);
+      currentY += s(25);
 
       // Bottom divider
       drawDivider(currentY, s(200));
-      currentY += s(30);
+      currentY += s(35);
 
       // Copyright
       drawText('כל הזכויות שמורות לאיל באש | תפילה מהשקט', currentY, s(16), 'rgba(140,106,66,0.6)', '700');
