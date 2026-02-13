@@ -56,9 +56,8 @@
       -webkit-touch-callout: none !important;
     }
 
-    /* Blur for unpaid preview */
-    . {
-      /* no blur - content visible */
+    /* Unpaid preview container */
+    .protected-area {
       transition: filter 0.5s;
       width: 100%;
       height: 100%;
@@ -203,7 +202,7 @@
 
     /* ===== LETTER MAP ===== */
     const LETTER_MAP = {
-      'א':'אלוהים','ב':'בורא','ג':'גאולה','ד':'דבקות','ה':'השם','ו':'וודאות','ז':'זין','ח':'חמלתו',
+      'א':'אלוהים','ב':'בורא','ג':'גאולה','ד':'דבקות','ה':'השם','ו':'וודאות','ז':'זיו','ח':'חמלתו',
       'ט':'טוהרו','י':'יה','כ':'כוחו','ך':'כוחו','ל':'לב','מ':'ממלכותו','ם':'ממלכותו','נ':'נשמתך',
       'ן':'נשמתך','ס':'סלה','ע':'עליון','פ':'פדותו','ף':'פדותו','צ':'צדקן','ץ':'צדקן','ק':'קרבתו',
       'ר':'רצונו','ש':'שכינה','ת':'תפילתך'
@@ -539,13 +538,9 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
                 <button onClick={handleAddToCart} className="w-full bg-amber-600 text-white py-6 rounded-[32px] font-bold text-xl shadow-[0_15px_40px_rgba(217,119,6,0.35)] hover:bg-amber-500 transition-all flex items-center justify-center gap-3 active:scale-95 hebrew-prayer">
                   <Check size={28} /> לרכישה והורדת הקובץ הנקי (20 ₪)
                 </button>
-                {false ? (
-                  <span></span>
-                ) : (
-                  <div className="text-center text-[11px] text-amber-200/40 hebrew-prayer" style={{fontWeight:400}}>
+                <div className="text-center text-[11px] text-amber-200/40 hebrew-prayer" style={{fontWeight:400}}>
                     🔒 אוהבים את מה שרואים? הזמינו ולאחר התשלום תוכלו להוריד את הקובץ הנקי ללא סימן מים
                   </div>
-                )}
                 <div className="bg-white/5 p-5 rounded-2xl border border-white/10 flex gap-4 items-center">
                   <Feather size={22} className="text-amber-500 shrink-0" />
                   <p className="text-[11px] text-amber-200/60 leading-relaxed hebrew-prayer" style={{ fontWeight:400 }}>מומלץ להדפיס על נייר עבה 250 גרם בגוון שמנת למראה האותנטי ביותר של המגילה.</p>
