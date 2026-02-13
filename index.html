@@ -447,10 +447,105 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       );
     };
 
+    /* ===== PRAYERS DATA ===== */
+    const PRAYERS = {
+      love: {
+        male: ['אבא יקר,','אני כאן.','תן בי את האהבה שבראת בי,','במודעות נוכחת מלאה.','כי האהבה היא אתה,','ואתה שמת אותה בי ביום שנולדתי.','אני לא מחפש אותה בחוץ.','אני זוכר אותה בפנים.','תודה על האהבה שהיא מה שהנני.','אמן כן יהי רצונך.'],
+        female: ['אבא יקר,','אני כאן.','תן בי את האהבה שבראת בי,','במודעות נוכחת מלאה.','כי האהבה היא אתה,','ואתה שמת אותה בי ביום שנולדתי.','אני לא מחפשת אותה בחוץ.','אני זוכרת אותה בפנים.','תודה על האהבה שהיא מה שהנני.','אמן כן יהי רצונך.']
+      },
+      light: {
+        male: ['אבא יקר,','אני אור בתוכך, ומתוכך.','תן לי לדעת את האור שכבר בי,','במודעות נוכחת מלאה.','האור לא חסר. הוא שלי.','כי אתה בראת אותי ממנו.','עלי רק לעצום עיניים,','ולזכור מה הנני.','תודה לך אבא.','אמן.'],
+        female: ['אבא יקר,','אני אור בתוכך, ומתוכך.','תן לי לדעת את האור שכבר בי,','במודעות נוכחת מלאה.','האור לא חסר. הוא שלי.','כי אתה בראת אותי ממנו.','עלי רק לעצום עיניים,','ולזכור מה הנני.','תודה לך אבא.','אמן.']
+      },
+      security: {
+        male: ['אבא יקר,','אני בטוח בזרועותיך עכשיו.','תן לי לדעת את הביטחון שברא אותי,','במודעות נוכחת מלאה.','אין לי מה לפחד.','כי אתה כאן, ואני בנך.','הפחד הוא חלום.','אבל אתה — אמת.','תודה שבראת אותי. אמן.'],
+        female: ['אבא יקר,','אני בטוחה בזרועותיך עכשיו.','תן לי לדעת את הביטחון שברא אותי,','במודעות נוכחת מלאה.','אין לי מה לפחד.','כי אתה כאן, ואני בתך.','הפחד הוא חלום.','אבל אתה — אמת.','תודה שבראת אותי. אמן.']
+      },
+      gratitude: {
+        male: ['תודה לשם יתברך שברא את האור.','תודה על החיים שנתת לי.','תודה על האוויר שאני נושם.','תודה על שאתה נמצא כאן תמיד,','מכוון אותי וחומל אותי בכל מצב.','תודה על האהבה.','תודה על הנוכחות.','אני לא מבקש עוד.','אני זוכר את מה שיש.','אמן כן יהי רצונך אבא. תודה.'],
+        female: ['תודה לשם יתברך שברא את האור.','תודה על החיים שנתת לי.','תודה על האוויר שאני נושמת.','תודה על שאתה נמצא כאן תמיד,','מכוון אותי וחומל אותי בכל מצב.','תודה על האהבה.','תודה על הנוכחות.','אני לא מבקשת עוד.','אני זוכרת את מה שיש.','אמן כן יהי רצונך אבא. תודה.']
+      },
+      presence: {
+        male: ['אבא יקר,','הנני כאן.','מבקש את הנוכחות שלך בי,','במודעות נוכחת מלאה.','אני יודע שאתה תמיד כאן.','גם אם אני לא רואה,','גם אם אני לא שומע אותך.','אתה כאן, כי אין הפרדה בינינו.','עלי רק לקרוא ותענני.','תודה. אמן.'],
+        female: ['אבא יקר,','הנני כאן.','מבקשת את הנוכחות שלך בי,','במודעות נוכחת מלאה.','אני יודעת שאתה תמיד כאן.','גם אם אני לא רואה,','גם אם אני לא שומעת אותך.','אתה כאן, כי אין הפרדה בינינו.','עלי רק לקרוא ותענני.','תודה. אמן.']
+      },
+      surrender: {
+        male: ['השם יתברך אבא,','הרצון שלך בשבילי','ולא שום רצון אחר.','אתה יודע אותי ורואה אותי','כאור בלב שלך.','תן לי את האומץ לראות את האמת בך,','במודעות נוכחת מלאה.','רצונך הוא רצוני.','אני הוא עבדך הנאמן.','תודה. אמן.'],
+        female: ['השם יתברך אבא,','הרצון שלך בשבילי','ולא שום רצון אחר.','אתה יודע אותי ורואה אותי','כאור בלב שלך.','תן לי את האומץ לראות את האמת בך,','במודעות נוכחת מלאה.','רצונך הוא רצוני.','אני היא שפחתך הנאמנה.','תודה. אמן.']
+      },
+      release: {
+        male: ['אבא יקר,','אני לא יודע כלום.','אני מבקש שאתה תוביל אותי.','תן לי לשחרר את השליטה,','במודעות נוכחת מלאה.','כי רק אחד מכוון מהלב.','הוא תמיד עלינו חושב.','גם אם החלום עדיין כואב,','הוא מחכה לנו.','בבית אוהב הוא הלב. אמן.'],
+        female: ['אבא יקר,','אני לא יודעת כלום.','אני מבקשת שאתה תוביל אותי.','תן לי לשחרר את השליטה,','במודעות נוכחת מלאה.','כי רק אחד מכוון מהלב.','הוא תמיד עלינו חושב.','גם אם החלום עדיין כואב,','הוא מחכה לנו.','בבית אוהב הוא הלב. אמן.']
+      },
+      closeness: {
+        male: ['אבא יקר,','אני יודע שאתה תמיד כאן,','ואני רק צריך לדבר איתך.','אתה מקשיב, חומל,','ורוצה רק אושר מושלם בשבילי.','גם אם הדברים נראים לי עכשיו אחרת,','אתה רואה את האור שהוא מה שהנני.','אין הפרדה בינינו.','תן לי לדעת את זה,','במודעות נוכחת מלאה.','אמן כן יהי רצונך. תודה לך אבא.'],
+        female: ['אבא יקר,','אני יודעת שאתה תמיד כאן,','ואני רק צריכה לדבר איתך.','אתה מקשיב, חומל,','ורוצה רק אושר מושלם בשבילי.','גם אם הדברים נראים לי עכשיו אחרת,','אתה רואה את האור שהוא מה שהנני.','אין הפרדה בינינו.','תן לי לדעת את זה,','במודעות נוכחת מלאה.','אמן כן יהי רצונך. תודה לך אבא.']
+      }
+    };
+
+    const TOPIC_TITLES = {
+      love: '❤️ תפילת אהבה', light: '✨ תפילת אור', security: '🛡️ תפילת ביטחון',
+      gratitude: '🙏 תפילת הודיה', presence: '🕊️ תפילת נוכחות', surrender: '🤲 תפילת כניעה',
+      release: '🌊 תפילת שחרור', closeness: '💛 תפילת קרבה'
+    };
+
+    const TOPIC_OPTIONS = [
+      {key:'love', emoji:'❤️', label:'אהבה'}, {key:'light', emoji:'✨', label:'אור'},
+      {key:'security', emoji:'🛡️', label:'ביטחון'}, {key:'gratitude', emoji:'🙏', label:'הודיה'},
+      {key:'presence', emoji:'🕊️', label:'נוכחות'}, {key:'surrender', emoji:'🤲', label:'כניעה'},
+      {key:'release', emoji:'🌊', label:'שחרור'}, {key:'closeness', emoji:'💛', label:'קרבה'}
+    ];
+
+    /* ===== PRAYER CARD ===== */
+    const PrayerCard = ({ name, gender, topic, mode = 'a4' }) => {
+      const prayer = PRAYERS[topic]?.[gender] || PRAYERS.love.male;
+      const title = TOPIC_TITLES[topic] || 'תפילה';
+
+      const cfg = {
+        mini:  { roll: 20, padV: 8,  padH: 6,  titleSize: 8,  nameSize: 14, prayerSize: 5.5, prayerLH: 1.5,  copySize: 4,  divW: 30, gap: 4 },
+        phone: { roll: 32, padV: 20, padH: 14, titleSize: 14, nameSize: 24, prayerSize: 9,   prayerLH: 1.7,  copySize: 7,  divW: 60, gap: 10 },
+        a4:    { roll: 48, padV: 36, padH: 28, titleSize: 20, nameSize: 36, prayerSize: 13,  prayerLH: 1.85, copySize: 9,  divW: 100, gap: 16 }
+      };
+      const c = cfg[mode] || cfg.a4;
+
+      const Divider = ({ w }) => (
+        <div style={{ width: w+'px', height: '1px', background: 'linear-gradient(90deg, transparent, #8c6a42, transparent)', margin: `${c.gap}px auto` }}></div>
+      );
+
+      return (
+        <div style={{ width:'100%', height:'100%', display:'flex', flexDirection:'column', alignItems:'center' }}>
+          <div className="scroll-roll-top" style={{ height: c.roll+'px' }}></div>
+          <div className="scroll-body" style={{ flex:1, overflow:'hidden', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', padding:`${c.padV}px ${c.padH}px`, textAlign:'center' }}>
+            <div className="scroll-text hebrew-prayer" style={{ fontSize: c.titleSize+'px', color:'#6b4f2e', fontWeight:900, letterSpacing:'2px', marginBottom: c.gap+'px' }}>
+              {title}
+            </div>
+            <Divider w={c.divW} />
+            <div style={{ width:'100%', margin:`${c.gap*0.5}px 0` }}>
+              <ScaledText text={name} baseFontSize={c.nameSize} letterSpacing={4} fontWeight={900} maxWidthPercent={90} />
+            </div>
+            <Divider w={c.divW * 0.7} />
+            <div className="scroll-text hebrew-prayer" style={{
+              fontSize: c.prayerSize+'px', lineHeight: c.prayerLH, fontWeight: 700, color: '#2b1810',
+              whiteSpace: 'pre-line', maxWidth: '90%', textAlign: 'center'
+            }}>
+              {prayer.join('\n')}
+            </div>
+            <Divider w={c.divW} />
+            <div className="hebrew-prayer" style={{ fontSize: c.copySize+'px', color:'#8c6a42', opacity:0.6, letterSpacing:'1px' }}>
+              כל הזכויות שמורות לאיל באש | תפילה מהשקט
+            </div>
+          </div>
+          <div className="scroll-roll-bottom" style={{ height: c.roll+'px' }}></div>
+        </div>
+      );
+    };
+
     /* ===== MAIN APP ===== */
     const App = () => {
       const [userName, setUserName] = useState('');
       const [gender, setGender] = useState('male');
+      const [category, setCategory] = useState('scroll');
+      const [topic, setTopic] = useState('love');
       const [format, setFormat] = useState('a4-single');
 
       const handleOrder = () => {
@@ -458,24 +553,42 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
         window.open('https://tfilamehasheket.cashcow.co.il/p/%D7%9E%D7%92%D7%99%D7%9C%D7%AA_%D7%94%D7%90%D7%95%D7%A8', '_blank');
       };
 
+      const CardComponent = category === 'prayer' ? PrayerCard : ScrollCard;
+      const cardProps = category === 'prayer'
+        ? { name: userName || 'השם שלך', gender, topic }
+        : { name: userName || 'השם שלך', gender };
+
       return (
         <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center" style={{ direction:'rtl' }}>
 
           {/* INTRO */}
           <div className="max-w-[500px] px-5 pt-10 pb-2 text-center">
-            <h2 className="text-[22px] font-black text-white mb-3 hebrew-prayer">✨ מגילת האור</h2>
+            <h2 className="text-[22px] font-black text-white mb-3 hebrew-prayer">✨ סטודיו תפילה מהשקט</h2>
             <p className="text-white/50 text-[14px] leading-[1.8] hebrew-prayer" style={{fontWeight:400}}>
-              באותיות שמך הושם סימן מהשם.<br/>
-              כל אות בשמך מחזיקה משמעות עמוקה —<br/>
-              סימן שהבורא הניח בך בכוונה שלמה.<br/><br/>
-              המגילה הזו היא הרגע שבו אתה מגלה<br/>
-              את הסוד שכתוב בשם שלך.
+              כשמבקשים מה שיש — מה שהשם יתברך כבר שם בך —<br/>
+              זה מתקבל. בוודאות. תמיד.<br/>
+              עליך רק לקרוא, והוא עונה.
             </p>
-            <p className="mt-4 text-white font-black text-[15px] hebrew-prayer">בחרו שם. בחרו ניסוח. קבלו מגילה אישית.</p>
+          </div>
+
+          {/* CATEGORY TOGGLE */}
+          <div className="w-full max-w-[500px] px-5 flex gap-[10px] mt-2">
+            <button
+              onClick={() => setCategory('prayer')}
+              className={`flex-1 py-4 rounded-2xl border-2 text-[16px] font-bold cursor-pointer hebrew-prayer transition-all ${category==='prayer' ? 'border-amber-600 bg-amber-600 text-white shadow-lg' : 'border-white/15 bg-white/[0.08] text-white/60'}`}
+            >
+              🙏 תפילות
+            </button>
+            <button
+              onClick={() => setCategory('scroll')}
+              className={`flex-1 py-4 rounded-2xl border-2 text-[16px] font-bold cursor-pointer hebrew-prayer transition-all ${category==='scroll' ? 'border-amber-600 bg-amber-600 text-white shadow-lg' : 'border-white/15 bg-white/[0.08] text-white/60'}`}
+            >
+              ✨ פירוש השם
+            </button>
           </div>
 
           {/* CONTROLS */}
-          <div className="w-full max-w-[500px] px-5 flex flex-col gap-3 mt-2">
+          <div className="w-full max-w-[500px] px-5 flex flex-col gap-3 mt-3">
             <input
               type="text"
               value={userName}
@@ -495,6 +608,23 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
                 </button>
               ))}
             </div>
+
+            {/* TOPIC SELECTOR - only for prayers */}
+            {category === 'prayer' && (
+              <select
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                className="w-full py-[14px] px-[18px] rounded-2xl border border-white/15 bg-[#1a1a1a] text-white text-[16px] font-bold text-center outline-none focus:border-amber-500 transition-all hebrew-prayer"
+              >
+                {TOPIC_OPTIONS.map(t => (
+                  <option key={t.key} value={t.key} style={{background:'#1a1a1a',color:'white'}}>
+                    {t.emoji} {t.label}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {/* FORMAT SELECTOR */}
             <div className="grid grid-cols-3 gap-[10px]">
               {[
                 {key:'a4-single', icon: FileText, label:'A4 מלא'},
@@ -517,7 +647,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
             {format === 'a4-single' && (
               <div style={{ width:'100%', aspectRatio:'1413/2000', borderRadius:'12px', overflow:'hidden', position:'relative' }}>
                 <div className="protected-area" style={{width:'100%',height:'100%'}}>
-                  <ScrollCard name={userName || 'השם שלך'} gender={gender} mode="a4" />
+                  <CardComponent {...cardProps} mode="a4" />
                 </div>
                 <div className="watermark-overlay">
                   <div className="wm-text wm-1">תצוגה מקדימה בלבד</div>
@@ -533,7 +663,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
                 {[0,1,2,3].map(i => (
                   <div key={i} style={{overflow:'hidden', borderRadius:'4px', position:'relative'}}>
                     <div className="protected-area" style={{width:'100%',height:'100%'}}>
-                      <ScrollCard name={userName || 'השם שלך'} gender={gender} mode="mini" />
+                      <CardComponent {...cardProps} mode="mini" />
                     </div>
                   </div>
                 ))}
@@ -550,7 +680,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
                   <div style={{ position:'absolute', top:'0', left:'50%', transform:'translateX(-50%)', width:'100px', height:'24px', background:'#0a0a0a', borderRadius:'0 0 18px 18px', zIndex:20 }}></div>
                   <div style={{ width:'100%', height:'100%', borderRadius:'34px', overflow:'hidden', background:'#f5e6c8', position:'relative' }}>
                     <div className="protected-area" style={{width:'100%',height:'100%'}}>
-                      <ScrollCard name={userName || 'השם שלך'} gender={gender} mode="phone" />
+                      <CardComponent {...cardProps} mode="phone" />
                     </div>
                     <div className="watermark-overlay phone">
                       <div className="wm-text wm-1">תצוגה מקדימה</div>
