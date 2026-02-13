@@ -382,7 +382,10 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       );
     };
 
-    /* ===== SCROLL CARD (with background image) ===== */
+    /* ===== QR CODE URL ===== */
+    const QR_URL = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=3d2b1f&bgcolor=f0debb&data=https://eyalbash1-art.github.io/scroll-studio/qr.html";
+
+    /* ===== SCROLL CARD (parchment) ===== */
     const ScrollCard = ({ name, gender, mode = 'a4' }) => {
       const cleanName = name.replace(/\s/g, '');
       const len = cleanName.length;
@@ -391,9 +394,9 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       const blessing = getSpiritualBlessing(name, gender);
 
       const cfg = {
-        mini:  { nameSize: len<=3?20:len<=5?16:12, nameLS: len<=3?3:len<=5?2:1, interpSize: 5.5, interpLS: 1, blessSize: 4.5, blessLH: 1.45, openSize: 4.5, divW: 25, gap: 2 },
-        phone: { nameSize: len<=3?38:len<=5?30:24, nameLS: len<=3?7:len<=5?5:3, interpSize: 10,  interpLS: 2, blessSize: 8,   blessLH: 1.6,  openSize: 8,   divW: 50, gap: 5 },
-        a4:    { nameSize: len<=3?56:len<=5?46:36, nameLS: len<=3?12:len<=5?8:4, interpSize: 14,  interpLS: 2, blessSize: 11,  blessLH: 1.7,  openSize: 10,  divW: 80, gap: 8 }
+        mini:  { roll: 18, nameSize: len<=3?22:len<=5?18:14, nameLS: len<=3?4:len<=5?3:2, interpSize: 6, interpLS: 1, blessSize: 5, blessLH: 1.5, openSize: 5, copySize: 4, divW: 30, gap: 3, qr: 28 },
+        phone: { roll: 28, nameSize: len<=3?40:len<=5?34:26, nameLS: len<=3?8:len<=5?6:3, interpSize: 11, interpLS: 2, blessSize: 9, blessLH: 1.65, openSize: 9, copySize: 6, divW: 55, gap: 6, qr: 42 },
+        a4:    { roll: 40, nameSize: len<=3?58:len<=5?48:38, nameLS: len<=3?14:len<=5?9:5, interpSize: 15, interpLS: 2, blessSize: 12, blessLH: 1.75, openSize: 11, copySize: 8, divW: 90, gap: 10, qr: 55 }
       };
       const c = cfg[mode] || cfg.a4;
 
@@ -402,28 +405,34 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       );
 
       return (
-        <div style={{ width:'100%', height:'100%', position:'relative' }}>
-          <img src={window.CARD_BG} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt="" />
-          <div style={{ position:'absolute', top:'38%', left:'28%', right:'20%', bottom:'20%', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', textAlign:'center', overflow:'hidden' }}>
+        <div style={{ width:'100%', height:'100%', display:'flex', flexDirection:'column', alignItems:'center' }}>
+          <div className="scroll-roll-top" style={{ height: c.roll+'px' }}></div>
+          <div className="scroll-body" style={{ flex:1, overflow:'hidden', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', padding:`${c.gap*2}px ${c.gap*3}px`, textAlign:'center', position:'relative' }}>
             <div className="scroll-text hebrew-prayer" style={{ fontSize: c.openSize+'px', color:'#8c6a42', letterSpacing:'2px', marginBottom: c.gap+'px' }}>
               באותיות שמך הושם סימן מהשם
             </div>
             <Divider w={c.divW} />
             <div style={{ width:'100%', margin:`${c.gap*0.5}px 0` }}>
-              <ScaledText text={displayName} baseFontSize={c.nameSize} letterSpacing={c.nameLS} fontWeight={900} maxWidthPercent={92} />
+              <ScaledText text={displayName} baseFontSize={c.nameSize} letterSpacing={c.nameLS} fontWeight={900} maxWidthPercent={90} />
             </div>
             <div style={{ width:'100%', margin:`${c.gap*0.5}px 0` }}>
-              <ScaledText text={interpretationLine} baseFontSize={c.interpSize} letterSpacing={c.interpLS} fontWeight={700} color="#3d2b1f" maxWidthPercent={95} />
+              <ScaledText text={interpretationLine} baseFontSize={c.interpSize} letterSpacing={c.interpLS} fontWeight={700} color="#3d2b1f" maxWidthPercent={92} />
             </div>
             <Divider w={c.divW * 0.7} />
             <div className="scroll-text hebrew-prayer" style={{
               fontSize: c.blessSize+'px', lineHeight: c.blessLH, fontWeight: 400, color: '#2b1810',
-              whiteSpace: 'pre-line', maxWidth: '95%', textAlign: 'center'
+              whiteSpace: 'pre-line', maxWidth: '92%', textAlign: 'center'
             }}>
               {blessing}
             </div>
+            <div style={{ marginTop: c.gap+'px', display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%' }}>
+              <img src={QR_URL} alt="QR" style={{ width: c.qr+'px', height: c.qr+'px', borderRadius:'3px' }} />
+              <div className="hebrew-prayer" style={{ fontSize: c.copySize+'px', color:'#8c6a42', opacity:0.6, letterSpacing:'1px' }}>
+                כל הזכויות שמורות לאיל באש | תפילה מהשקט
+              </div>
+            </div>
           </div>
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=3d2b1f&bgcolor=f0debb&data=https://eyalbash1-art.github.io/scroll-studio/qr.html" alt="QR" style={{ position:'absolute', bottom:'20%', left:'20%', width:'12%', aspectRatio:'1/1', borderRadius:'3px' }} />
+          <div className="scroll-roll-bottom" style={{ height: c.roll+'px' }}></div>
         </div>
       );
     };
@@ -477,15 +486,15 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       {key:'release', emoji:'🌊', label:'שחרור'}, {key:'closeness', emoji:'💛', label:'קרבה'}
     ];
 
-    /* ===== PRAYER CARD (with background image) ===== */
+    /* ===== PRAYER CARD (parchment) ===== */
     const PrayerCard = ({ name, gender, topic, mode = 'a4' }) => {
       const prayer = PRAYERS[topic]?.[gender] || PRAYERS.love.male;
       const title = TOPIC_TITLES[topic] || 'תפילה';
 
       const cfg = {
-        mini:  { titleSize: 7,  nameSize: 12, prayerSize: 4.5, prayerLH: 1.45, divW: 25, gap: 2 },
-        phone: { titleSize: 12, nameSize: 20, prayerSize: 7.5, prayerLH: 1.6,  divW: 50, gap: 5 },
-        a4:    { titleSize: 16, nameSize: 28, prayerSize: 10,  prayerLH: 1.7,  divW: 80, gap: 8 }
+        mini:  { roll: 18, titleSize: 7,  nameSize: 14, prayerSize: 5,   prayerLH: 1.5,  copySize: 4, divW: 30, gap: 3, qr: 28 },
+        phone: { roll: 28, titleSize: 13, nameSize: 22, prayerSize: 8.5, prayerLH: 1.65, copySize: 6, divW: 55, gap: 6, qr: 42 },
+        a4:    { roll: 40, titleSize: 18, nameSize: 30, prayerSize: 11,  prayerLH: 1.75, copySize: 8, divW: 90, gap: 10, qr: 55 }
       };
       const c = cfg[mode] || cfg.a4;
 
@@ -494,25 +503,31 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       );
 
       return (
-        <div style={{ width:'100%', height:'100%', position:'relative' }}>
-          <img src={window.CARD_BG} style={{ width:'100%', height:'100%', objectFit:'cover' }} alt="" />
-          <div style={{ position:'absolute', top:'38%', left:'28%', right:'20%', bottom:'20%', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', textAlign:'center', overflow:'hidden' }}>
+        <div style={{ width:'100%', height:'100%', display:'flex', flexDirection:'column', alignItems:'center' }}>
+          <div className="scroll-roll-top" style={{ height: c.roll+'px' }}></div>
+          <div className="scroll-body" style={{ flex:1, overflow:'hidden', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', padding:`${c.gap*2}px ${c.gap*3}px`, textAlign:'center', position:'relative' }}>
             <div className="scroll-text hebrew-prayer" style={{ fontSize: c.titleSize+'px', color:'#6b4f2e', fontWeight:900, letterSpacing:'2px', marginBottom: c.gap+'px' }}>
               {title}
             </div>
             <Divider w={c.divW} />
             <div style={{ width:'100%', margin:`${c.gap*0.5}px 0` }}>
-              <ScaledText text={name} baseFontSize={c.nameSize} letterSpacing={4} fontWeight={900} maxWidthPercent={92} />
+              <ScaledText text={name} baseFontSize={c.nameSize} letterSpacing={4} fontWeight={900} maxWidthPercent={90} />
             </div>
             <Divider w={c.divW * 0.7} />
             <div className="scroll-text hebrew-prayer" style={{
               fontSize: c.prayerSize+'px', lineHeight: c.prayerLH, fontWeight: 700, color: '#2b1810',
-              whiteSpace: 'pre-line', maxWidth: '95%', textAlign: 'center'
+              whiteSpace: 'pre-line', maxWidth: '92%', textAlign: 'center'
             }}>
               {prayer.join('\n')}
             </div>
+            <div style={{ marginTop: c.gap+'px', display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%' }}>
+              <img src={QR_URL} alt="QR" style={{ width: c.qr+'px', height: c.qr+'px', borderRadius:'3px' }} />
+              <div className="hebrew-prayer" style={{ fontSize: c.copySize+'px', color:'#8c6a42', opacity:0.6, letterSpacing:'1px' }}>
+                כל הזכויות שמורות לאיל באש | תפילה מהשקט
+              </div>
+            </div>
           </div>
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=3d2b1f&bgcolor=f0debb&data=https://eyalbash1-art.github.io/scroll-studio/qr.html" alt="QR" style={{ position:'absolute', bottom:'20%', left:'20%', width:'12%', aspectRatio:'1/1', borderRadius:'3px' }} />
+          <div className="scroll-roll-bottom" style={{ height: c.roll+'px' }}></div>
         </div>
       );
     };
