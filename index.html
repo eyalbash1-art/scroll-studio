@@ -522,10 +522,8 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       const [gender, setGender] = useState('male');
       const [category, setCategory] = useState('scroll');
       const [topic, setTopic] = useState('love');
-      const [format, setFormat] = useState('a4-single');
-
       const handleOrder = () => {
-        try { localStorage.setItem('scroll_name', userName); localStorage.setItem('scroll_gender', gender); localStorage.setItem('scroll_format', format); } catch(e) {}
+        try { localStorage.setItem('scroll_name', userName); localStorage.setItem('scroll_gender', gender); } catch(e) {}
         window.open('https://tfilamehasheket.cashcow.co.il/p/%D7%9E%D7%92%D7%99%D7%9C%D7%AA_%D7%94%D7%90%D7%95%D7%A8', '_blank');
       };
 
@@ -632,73 +630,21 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
               </select>
             )}
 
-            {/* FORMAT SELECTOR */}
-            <div className="grid grid-cols-3 gap-[10px]">
-              {[
-                {key:'a4-single', icon: FileText, label:'A4 מלא'},
-                {key:'a4-quad', icon: LayoutGrid, label:'4 בדף'},
-                {key:'phone', icon: Smartphone, label:'שומר מסך'}
-              ].map(({key, icon:Ic, label}) => (
-                <button
-                  key={key}
-                  onClick={() => setFormat(key)}
-                  className={`flex flex-col items-center py-3 rounded-[14px] border-2 text-[12px] font-bold cursor-pointer hebrew-prayer transition-all ${format===key ? 'border-amber-600 bg-amber-600/20 text-white' : 'border-white/15 bg-white/[0.08] text-white/60'}`}
-                >
-                  <Ic size={18} /><span className="mt-1">{label}</span>
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* PREVIEW — card size: 10×15cm = 1181×1772px */}
           <div className="w-full max-w-[500px] px-5 mt-4 relative">
-            {format === 'a4-single' && (
-              <div style={{ width:'100%', aspectRatio:'1181/1772', borderRadius:'12px', overflow:'hidden', position:'relative' }}>
-                <div className="protected-area" style={{width:'100%',height:'100%'}}>
-                  <CardComponent {...cardProps} mode="a4" />
-                </div>
-                <div className="watermark-overlay">
-                  <div className="wm-text wm-1">תצוגה מקדימה בלבד</div>
-                  <div className="wm-text wm-2">תפילה מהשקט • איל באש</div>
-                  <div className="wm-text wm-3">תצוגה מקדימה בלבד</div>
-                  <div className="wm-text wm-logo">תפילה מהשקט</div>
-                </div>
+            <div style={{ width:'100%', aspectRatio:'1181/1772', borderRadius:'12px', overflow:'hidden', position:'relative' }}>
+              <div className="protected-area" style={{width:'100%',height:'100%'}}>
+                <CardComponent {...cardProps} mode="a4" />
               </div>
-            )}
-
-            {format === 'a4-quad' && (
-              <div style={{ width:'100%', aspectRatio:'2480/3508', display:'grid', gridTemplateColumns:'1fr 1fr', gridTemplateRows:'1fr 1fr', gap:'4px', padding:'4px', background:'#f5f0e8', borderRadius:'12px', overflow:'hidden', position:'relative' }}>
-                {[0,1,2,3].map(i => (
-                  <div key={i} style={{overflow:'hidden', borderRadius:'4px', position:'relative', aspectRatio:'1181/1772'}}>
-                    <div className="protected-area" style={{width:'100%',height:'100%'}}>
-                      <CardComponent {...cardProps} mode="mini" />
-                    </div>
-                  </div>
-                ))}
-                <div className="watermark-overlay" style={{borderRadius:'12px'}}>
-                  <div className="wm-text wm-1">תצוגה מקדימה</div>
-                  <div className="wm-text wm-logo">תפילה מהשקט</div>
-                </div>
+              <div className="watermark-overlay">
+                <div className="wm-text wm-1">תצוגה מקדימה בלבד</div>
+                <div className="wm-text wm-2">תפילה מהשקט • איל באש</div>
+                <div className="wm-text wm-3">תצוגה מקדימה בלבד</div>
+                <div className="wm-text wm-logo">תפילה מהשקט</div>
               </div>
-            )}
-
-            {format === 'phone' && (
-              <div style={{ width:'260px', margin:'0 auto', position:'relative' }}>
-                <div style={{ width:'260px', height:'545px', background:'#0a0a0a', borderRadius:'44px', padding:'10px', border:'3px solid #2a2a2a', boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }}>
-                  <div style={{ position:'absolute', top:'0', left:'50%', transform:'translateX(-50%)', width:'100px', height:'24px', background:'#0a0a0a', borderRadius:'0 0 18px 18px', zIndex:20 }}></div>
-                  <div style={{ width:'100%', height:'100%', borderRadius:'34px', overflow:'hidden', position:'relative' }}>
-                    <div className="protected-area" style={{width:'100%',height:'100%'}}>
-                      <CardComponent {...cardProps} mode="phone" />
-                    </div>
-                    <div className="watermark-overlay phone">
-                      <div className="wm-text wm-1">תצוגה מקדימה</div>
-                      <div className="wm-text wm-2">תפילה מהשקט</div>
-                    </div>
-                  </div>
-                  <div style={{ position:'absolute', bottom:'6px', left:'50%', transform:'translateX(-50%)', width:'80px', height:'3px', background:'rgba(255,255,255,0.15)', borderRadius:'2px' }}></div>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
 
           {/* ORDER BUTTON */}
