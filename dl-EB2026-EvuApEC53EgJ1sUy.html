@@ -255,13 +255,13 @@
       let w, h, filename;
       
       if (format === 'phone') {
-        w = 1170; h = 2532; // iPhone 14 Pro
+        w = 1181; h = 1772; // 10×15cm postcard at 300dpi
         filename = `מגילת_${name}_טלפון.png`;
       } else if (format === 'a4-single') {
-        w = 2480; h = 3508; // A4 at 300dpi
-        filename = `מגילת_${name}_A4.png`;
+        w = 1181; h = 1772; // 10×15cm postcard at 300dpi
+        filename = `מגילת_${name}_גלויה.png`;
       } else {
-        // a4-quad: render 4 on one A4
+        // a4-quad: render 4 postcards on one A4
         w = 2480; h = 3508;
         filename = `מגילת_${name}_4בדף.png`;
       }

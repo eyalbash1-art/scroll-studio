@@ -650,10 +650,10 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
             </div>
           </div>
 
-          {/* PREVIEW */}
+          {/* PREVIEW — card size: 10×15cm = 1181×1772px */}
           <div className="w-full max-w-[500px] px-5 mt-4 relative">
             {format === 'a4-single' && (
-              <div style={{ width:'100%', aspectRatio:'1413/2000', borderRadius:'12px', overflow:'hidden', position:'relative' }}>
+              <div style={{ width:'100%', aspectRatio:'1181/1772', borderRadius:'12px', overflow:'hidden', position:'relative' }}>
                 <div className="protected-area" style={{width:'100%',height:'100%'}}>
                   <CardComponent {...cardProps} mode="a4" />
                 </div>
@@ -667,9 +667,9 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
             )}
 
             {format === 'a4-quad' && (
-              <div style={{ width:'100%', aspectRatio:'1413/2000', display:'grid', gridTemplateColumns:'1fr 1fr', gridTemplateRows:'1fr 1fr', gap:'4px', padding:'4px', background:'#f5f0e8', borderRadius:'12px', overflow:'hidden', position:'relative' }}>
+              <div style={{ width:'100%', aspectRatio:'2480/3508', display:'grid', gridTemplateColumns:'1fr 1fr', gridTemplateRows:'1fr 1fr', gap:'4px', padding:'4px', background:'#f5f0e8', borderRadius:'12px', overflow:'hidden', position:'relative' }}>
                 {[0,1,2,3].map(i => (
-                  <div key={i} style={{overflow:'hidden', borderRadius:'4px', position:'relative'}}>
+                  <div key={i} style={{overflow:'hidden', borderRadius:'4px', position:'relative', aspectRatio:'1181/1772'}}>
                     <div className="protected-area" style={{width:'100%',height:'100%'}}>
                       <CardComponent {...cardProps} mode="mini" />
                     </div>
@@ -686,7 +686,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
               <div style={{ width:'260px', margin:'0 auto', position:'relative' }}>
                 <div style={{ width:'260px', height:'545px', background:'#0a0a0a', borderRadius:'44px', padding:'10px', border:'3px solid #2a2a2a', boxShadow:'0 20px 60px rgba(0,0,0,0.5)' }}>
                   <div style={{ position:'absolute', top:'0', left:'50%', transform:'translateX(-50%)', width:'100px', height:'24px', background:'#0a0a0a', borderRadius:'0 0 18px 18px', zIndex:20 }}></div>
-                  <div style={{ width:'100%', height:'100%', borderRadius:'34px', overflow:'hidden', background:'#f5e6c8', position:'relative' }}>
+                  <div style={{ width:'100%', height:'100%', borderRadius:'34px', overflow:'hidden', position:'relative' }}>
                     <div className="protected-area" style={{width:'100%',height:'100%'}}>
                       <CardComponent {...cardProps} mode="phone" />
                     </div>
