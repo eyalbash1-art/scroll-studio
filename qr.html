@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>תפילה מהשקט | איל באש</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Frank Ruhl Libre', serif; }
+    body {
+      background: #0a0a0a;
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* Background glow */
+    .bg-glow {
+      position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+      background: radial-gradient(circle at 50% 50%, rgba(217,119,6,0.08) 0%, transparent 60%);
+      pointer-events: none; z-index: 0;
+    }
+
+    .container {
+      position: relative; z-index: 1;
+      max-width: 460px; width: 100%; padding: 0 24px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+
+    /* Logo area */
+    .logo-area {
+      margin-top: 50px; margin-bottom: 20px; text-align: center;
+    }
+    .logo-icon {
+      width: 80px; height: 80px; margin: 0 auto 16px;
+      background: linear-gradient(135deg, rgba(217,119,6,0.2), rgba(217,119,6,0.05));
+      border: 2px solid rgba(217,119,6,0.3);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+      box-shadow: 0 0 40px rgba(217,119,6,0.15);
+    }
+    .logo-title {
+      font-size: 32px; font-weight: 900; color: white;
+      letter-spacing: 2px; margin-bottom: 6px;
+    }
+    .logo-subtitle {
+      font-size: 14px; font-weight: 700; color: rgba(217,119,6,0.7);
+      letter-spacing: 4px; text-transform: uppercase;
+    }
+
+    /* Divider */
+    .divider {
+      width: 120px; height: 1px; margin: 24px auto;
+      background: linear-gradient(90deg, transparent, rgba(217,119,6,0.4), transparent);
+    }
+
+    /* Quote */
+    .quote {
+      text-align: center; padding: 0 10px; margin-bottom: 30px;
+    }
+    .quote p {
+      font-size: 17px; font-weight: 400; color: rgba(255,255,255,0.6);
+      line-height: 1.9; margin-bottom: 8px;
+    }
+    .quote .highlight {
+      color: white; font-weight: 700;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%; padding: 18px 24px; border-radius: 20px;
+      border: none; font-size: 18px; font-weight: 900;
+      font-family: 'Frank Ruhl Libre', serif;
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 12px;
+      text-decoration: none; transition: all 0.3s;
+      margin-bottom: 14px;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-whatsapp {
+      background: linear-gradient(135deg, #25D366, #128C7E);
+      color: white;
+      box-shadow: 0 8px 30px rgba(37,211,102,0.3);
+    }
+    .btn-whatsapp:hover { box-shadow: 0 12px 40px rgba(37,211,102,0.45); transform: translateY(-2px); }
+
+    .btn-tiktok {
+      background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+      color: white;
+      border: 1.5px solid rgba(255,255,255,0.12);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
+    .btn-tiktok:hover { border-color: rgba(255,255,255,0.25); transform: translateY(-2px); }
+
+    .btn-studio {
+      background: linear-gradient(135deg, #b45309, #92400e);
+      color: white;
+      box-shadow: 0 8px 30px rgba(180,83,9,0.3);
+    }
+    .btn-studio:hover { box-shadow: 0 12px 40px rgba(180,83,9,0.45); transform: translateY(-2px); }
+
+    .btn-icon { font-size: 24px; }
+    .btn-label { display: flex; flex-direction: column; align-items: flex-start; }
+    .btn-label-main { font-size: 18px; font-weight: 900; }
+    .btn-label-sub { font-size: 11px; font-weight: 400; opacity: 0.7; margin-top: 2px; }
+
+    /* Footer */
+    .footer {
+      margin-top: 40px; margin-bottom: 30px; text-align: center;
+      padding: 20px 0; border-top: 1px solid rgba(255,255,255,0.06);
+      width: 100%;
+    }
+    .footer-credit {
+      font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.25);
+      letter-spacing: 1px;
+    }
+    .footer-name {
+      font-size: 16px; font-weight: 900; color: rgba(217,119,6,0.5);
+      margin-top: 6px;
+    }
+    .footer-copy {
+      font-size: 10px; color: rgba(255,255,255,0.15);
+      margin-top: 10px; letter-spacing: 3px; text-transform: uppercase;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(25px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-1 { animation: fadeInUp 0.7s ease-out 0.1s both; }
+    .animate-2 { animation: fadeInUp 0.7s ease-out 0.3s both; }
+    .animate-3 { animation: fadeInUp 0.7s ease-out 0.5s both; }
+    .animate-4 { animation: fadeInUp 0.7s ease-out 0.7s both; }
+    .animate-5 { animation: fadeInUp 0.7s ease-out 0.9s both; }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <div class="container">
+
+    <!-- Logo -->
+    <div class="logo-area animate-1">
+      <div class="logo-icon">🕊️</div>
+      <div class="logo-title">תפילה מהשקט</div>
+      <div class="logo-subtitle">EYAL BASH</div>
+    </div>
+
+    <div class="divider animate-2"></div>
+
+    <!-- Quote -->
+    <div class="quote animate-2">
+      <p>
+        כשמבקשים מה שיש —<br>
+        מה שהשם יתברך <span class="highlight">כבר שם בך</span> —<br>
+        זה מתקבל. בוודאות. תמיד.
+      </p>
+      <p style="margin-top:12px;">
+        עליך רק לקרוא, <span class="highlight">והוא עונה.</span>
+      </p>
+    </div>
+
+    <!-- WhatsApp Button -->
+    <a href="https://wa.me/972507660022?text=%D7%94%D7%99%D7%99%2C%20%D7%90%D7%A0%D7%99%20%D7%A8%D7%95%D7%A6%D7%94%20%D7%9C%D7%94%D7%96%D7%9E%D7%99%D7%9F%20%D7%90%D7%99%D7%A8%D7%95%D7%A2%20%D7%AA%D7%A4%D7%99%D7%9C%D7%94%20%D7%9E%D7%94%D7%A9%D7%E7%D7%98" class="btn btn-whatsapp animate-3" target="_blank" rel="noopener">
+      <span class="btn-icon">💬</span>
+      <span class="btn-label">
+        <span class="btn-label-main">הזמנת אירוע בוואטסאפ</span>
+        <span class="btn-label-sub">אירועי תפילה מהשקט — פרטיים וקבוצתיים</span>
+      </span>
+    </a>
+
+    <!-- TikTok Button -->
+    <a href="https://www.tiktok.com/@tfilamehasheket?is_from_webapp=1&sender_device=pc" class="btn btn-tiktok animate-4" target="_blank" rel="noopener">
+      <span class="btn-icon">🎵</span>
+      <span class="btn-label">
+        <span class="btn-label-main">עקבו אחרינו בטיקטוק</span>
+        <span class="btn-label-sub">@tfilamehasheket — תוכן יומי, תפילות ואור</span>
+      </span>
+    </a>
+
+    <!-- Studio Button -->
+    <a href="index.html" class="btn btn-studio animate-5">
+      <span class="btn-icon">✨</span>
+      <span class="btn-label">
+        <span class="btn-label-main">כניסה לסטודיו</span>
+        <span class="btn-label-sub">מגילת האור — תפילות ופירוש השם</span>
+      </span>
+    </a>
+
+    <!-- Footer -->
+    <div class="footer animate-5">
+      <div class="footer-credit">הפרויקט של</div>
+      <div class="footer-name">איל באש</div>
+      <div class="footer-copy">© 2026 כל הזכויות שמורות | תפילה מהשקט</div>
+    </div>
+
+  </div>
+</body>
+</html>
