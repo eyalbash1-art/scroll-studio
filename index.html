@@ -394,7 +394,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       const blessing = getSpiritualBlessing(name, gender);
 
       const cfg = {
-        a4: { nameSize: len<=3?48:len<=5?40:32, nameLS: len<=3?10:len<=5?7:4, interpSize: 13, interpLS: 2, blessSize: 10, blessLH: 1.7, openSize: 10, copySize: 7, divW: 80, gap: 8, qr: 50 }
+        a4: { nameSize: len<=3?56:len<=5?46:36, nameLS: len<=3?12:len<=5?8:5, interpSize: 15, interpLS: 2, blessSize: 13, blessLH: 1.75, openSize: 12, divW: 90, gap: 8, qr: 50 }
       };
       const c = cfg[mode] || cfg.a4;
 
@@ -405,7 +405,8 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       return (
         <div style={{ width:'100%', height:'100%', position:'relative' }}>
           <img src={window.CARD_BG} style={{ width:'100%', height:'100%', objectFit:'fill' }} alt="" />
-          <div style={{ position:'absolute', top:'10%', left:'10%', right:'10%', bottom:'12%', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', textAlign:'center', overflow:'hidden' }}>
+          {/* Text area on parchment */}
+          <div style={{ position:'absolute', top:'10%', left:'10%', right:'10%', bottom:'14%', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', textAlign:'center', overflow:'hidden' }}>
             <div className="scroll-text hebrew-prayer" style={{ fontSize: c.openSize+'px', color:'#8c6a42', letterSpacing:'2px', marginBottom: c.gap+'px' }}>
               באותיות שמך הושם סימן מהשם
             </div>
@@ -423,12 +424,12 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
             }}>
               {blessing}
             </div>
-            <div style={{ marginTop: c.gap+'px', display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%' }}>
-              <img src={QR_URL} alt="QR" style={{ width: c.qr+'px', height: c.qr+'px', borderRadius:'3px' }} />
-              <div className="hebrew-prayer" style={{ fontSize: c.copySize+'px', color:'#8c6a42', opacity:0.6, letterSpacing:'1px' }}>
-                כל הזכויות שמורות לאיל באש | תפילה מהשקט
-              </div>
-            </div>
+          </div>
+          {/* QR code - bottom left corner */}
+          <img src={QR_URL} alt="QR" style={{ position:'absolute', bottom:'2%', left:'3%', width:'14%', aspectRatio:'1/1', borderRadius:'3px' }} />
+          {/* Copyright on bottom roll */}
+          <div className="hebrew-prayer" style={{ position:'absolute', bottom:'3%', left:'0', right:'0', textAlign:'center', fontSize:'8px', color:'#5c4033', fontWeight:700, letterSpacing:'1px', opacity:0.7 }}>
+            כל הזכויות שמורות לאיל באש | תפילה מהשקט
           </div>
         </div>
       );
@@ -489,7 +490,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       const title = TOPIC_TITLES[topic] || 'תפילה';
 
       const cfg = {
-        a4: { titleSize: 16, nameSize: 26, prayerSize: 9, prayerLH: 1.7, copySize: 7, divW: 80, gap: 8, qr: 50 }
+        a4: { titleSize: 18, nameSize: 32, prayerSize: 12, prayerLH: 1.75, divW: 90, gap: 8, qr: 50 }
       };
       const c = cfg[mode] || cfg.a4;
 
@@ -500,7 +501,8 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       return (
         <div style={{ width:'100%', height:'100%', position:'relative' }}>
           <img src={window.CARD_BG} style={{ width:'100%', height:'100%', objectFit:'fill' }} alt="" />
-          <div style={{ position:'absolute', top:'10%', left:'10%', right:'10%', bottom:'12%', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', textAlign:'center', overflow:'hidden' }}>
+          {/* Text area on parchment */}
+          <div style={{ position:'absolute', top:'10%', left:'10%', right:'10%', bottom:'14%', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', textAlign:'center', overflow:'hidden' }}>
             <div className="scroll-text hebrew-prayer" style={{ fontSize: c.titleSize+'px', color:'#6b4f2e', fontWeight:900, letterSpacing:'2px', marginBottom: c.gap+'px' }}>
               {title}
             </div>
@@ -515,12 +517,12 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
             }}>
               {prayer.join('\n')}
             </div>
-            <div style={{ marginTop: c.gap+'px', display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%' }}>
-              <img src={QR_URL} alt="QR" style={{ width: c.qr+'px', height: c.qr+'px', borderRadius:'3px' }} />
-              <div className="hebrew-prayer" style={{ fontSize: c.copySize+'px', color:'#8c6a42', opacity:0.6, letterSpacing:'1px' }}>
-                כל הזכויות שמורות לאיל באש | תפילה מהשקט
-              </div>
-            </div>
+          </div>
+          {/* QR code - bottom left corner */}
+          <img src={QR_URL} alt="QR" style={{ position:'absolute', bottom:'2%', left:'3%', width:'14%', aspectRatio:'1/1', borderRadius:'3px' }} />
+          {/* Copyright on bottom roll */}
+          <div className="hebrew-prayer" style={{ position:'absolute', bottom:'3%', left:'0', right:'0', textAlign:'center', fontSize:'8px', color:'#5c4033', fontWeight:700, letterSpacing:'1px', opacity:0.7 }}>
+            כל הזכויות שמורות לאיל באש | תפילה מהשקט
           </div>
         </div>
       );
