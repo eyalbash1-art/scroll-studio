@@ -99,6 +99,17 @@
 
       /* QR code visible in print */
       .print-qr { visibility: visible !important; display: block !important; }
+
+      /* Each card on a separate page */
+      .print-card {
+        page-break-after: always !important;
+        break-after: page !important;
+        width: 100mm !important;
+        height: 150mm !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+      }
+      .print-card:last-child { page-break-after: auto !important; break-after: auto !important; }
     }
 
     /* ===== ANTI-COPY PROTECTIONS ===== */
@@ -255,17 +266,43 @@
     const Feather = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/></svg>;
     const CreditCard = ({size=24}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>;
 
-    /* ===== LETTER MAP ===== */
-    const LETTER_MAP = {
-      'א':'אלוהים','ב':'בורא','ג':'גאולה','ד':'דבקות','ה':'השם','ו':'וודאות','ז':'זיו','ח':'חמלתו',
-      'ט':'טוהרו','י':'יה','כ':'כוחו','ך':'כוחו','ל':'לב','מ':'ממלכותו','ם':'ממלכותו','נ':'נשמתך',
-      'ן':'נשמתך','ס':'סלה','ע':'עליון','פ':'פדותו','ף':'פדותו','צ':'צדקן','ץ':'צדקן','ק':'קרבתו',
-      'ר':'רצונו','ש':'שכינה','ת':'תפילתך'
+    /* ===== LETTER MAP (3 options per letter) ===== */
+    const LETTER_MAP_MULTI = {
+      'א':['אלוהים','אור אינסוף','אמונה'],
+      'ב':['בורא','ברכה','ביטחון'],
+      'ג':['גאולה','גדולה','גבורה'],
+      'ד':['דבקות','דרך','דעת'],
+      'ה':['השם','הודיה','הארה'],
+      'ו':['וודאות','וידוי','ותיקין'],
+      'ז':['זיו','זוהר','זכות'],
+      'ח':['חמלתו','חסד','חיים'],
+      'ט':['טוהרו','טוב','טהרה'],
+      'י':['יה','ישועה','יראה'],
+      'כ':['כוחו','כבוד','כוונה'], 'ך':['כוחו','כבוד','כוונה'],
+      'ל':['לב','לאהוב','לבטוח'],
+      'מ':['ממלכותו','משמעות','מאור'], 'ם':['ממלכותו','משמעות','מאור'],
+      'נ':['נשמתך','נצחי','נאמנות'], 'ן':['נשמתך','נצחי','נאמנות'],
+      'ס':['סלה','סליחה','סוד'],
+      'ע':['עליון','עוז','ענווה'],
+      'פ':['פדותו','פלא','פנימיות'], 'ף':['פדותו','פלא','פנימיות'],
+      'צ':['צדקן','צמיחה','ציון'], 'ץ':['צדקן','צמיחה','ציון'],
+      'ק':['קרבתו','קדושה','קשר'],
+      'ר':['רצונו','רחמים','רוח'],
+      'ש':['שכינה','שלום','שמחה'],
+      'ת':['תפילתך','תקווה','תודה']
     };
 
-    const getInterpretationLine = (name) => {
+    // Legacy single map (for backward compat)
+    const LETTER_MAP = {};
+    Object.keys(LETTER_MAP_MULTI).forEach(k => LETTER_MAP[k] = LETTER_MAP_MULTI[k][0]);
+
+    const getInterpretationLine = (name, variantIndex = 0) => {
       if (!name.trim()) return '';
-      return name.replace(/\s/g,'').split('').map(l => LETTER_MAP[l] || 'אור').join(' - ');
+      return name.replace(/\s/g,'').split('').map((l, i) => {
+        const options = LETTER_MAP_MULTI[l] || ['אור','הארה','נשמה'];
+        const pick = (variantIndex + i) % options.length;
+        return options[pick];
+      }).join(' - ');
     };
 
     /* ===== PERSONAL BLESSINGS - EYAL BASH STYLE ===== */
@@ -457,11 +494,11 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
     const QR_URL = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=3d2b1f&bgcolor=f0debb&data=https://eyalbash1-art.github.io/scroll-studio/qr.html";
 
     /* ===== SCROLL CARD ===== */
-    const ScrollCard = ({ name, gender, mode = 'a4', eventLine = '' }) => {
+    const ScrollCard = ({ name, gender, mode = 'a4', eventLine = '', variantIndex = 0 }) => {
       const cleanName = name.replace(/\s/g, '');
       const len = cleanName.length;
       const displayName = cleanName.split('').join('  ');
-      const interpretationLine = getInterpretationLine(name);
+      const interpretationLine = getInterpretationLine(name, variantIndex);
       const blessing = getSpiritualBlessing(name, gender);
 
       const cfg = {
@@ -556,7 +593,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
     ];
 
     /* ===== PRAYER CARD ===== */
-    const PrayerCard = ({ name, gender, topic, mode = 'a4', eventLine = '' }) => {
+    const PrayerCard = ({ name, gender, topic, mode = 'a4', eventLine = '', variantIndex = 0 }) => {
       const prayer = PRAYERS[topic]?.[gender] || PRAYERS.love.male;
       const title = TOPIC_TITLES[topic] || 'תפילה';
 
@@ -670,9 +707,14 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       const [view, setView] = useState('home');
       const [eventLine, setEventLine] = useState(() => { try { return localStorage.getItem('tfila_event_line') || ''; } catch(e) { return ''; } });
       const [eventLocked, setEventLocked] = useState(() => { try { return localStorage.getItem('tfila_event_locked') === 'true'; } catch(e) { return false; } });
-      const [userName, setUserName] = useState('');
-      const [gender, setGender] = useState('male');
+      const emptyRow = () => ({name:'', gender:'male'});
+      const [rows, setRows] = useState([emptyRow(),emptyRow(),emptyRow(),emptyRow(),emptyRow()]);
+      const [activeCount, setActiveCount] = useState(1);
       const [topic, setTopic] = useState('love');
+
+      const updateRow = (idx, field, value) => {
+        setRows(prev => prev.map((r,i) => i===idx ? {...r, [field]: field==='name' ? value.replace(/[^א-ת\s]/g,'') : value} : r));
+      };
 
       const lockEvent = () => {
         if (eventLine.trim()) {
@@ -696,9 +738,10 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       const category = licenseInfo.type || 'scroll';
 
       const CardComponent = category === 'prayer' ? PrayerCard : ScrollCard;
-      const cardProps = category === 'prayer'
-        ? { name: userName || 'השם שלך', gender, topic, eventLine }
-        : { name: userName || 'השם שלך', gender, eventLine };
+      const activeRows = rows.slice(0, activeCount);
+      const getCardProps = (row, idx) => category === 'prayer'
+        ? { name: row.name || 'השם שלך', gender: row.gender, topic, eventLine, variantIndex: idx }
+        : { name: row.name || 'השם שלך', gender: row.gender, eventLine, variantIndex: idx };
 
       return (
         <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center" style={{ direction:'rtl' }}>
@@ -781,59 +824,72 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
             )}
           </div>
 
-          {/* CONTROLS */}
-          <div className="w-full max-w-[500px] px-5 flex flex-col gap-3 mt-3">
-            <input
-              type="text"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value.replace(/[^א-ת\s]/g,''))}
-              placeholder="הקלידו את השם"
-              maxLength={15}
-              className="w-full py-[14px] px-[18px] rounded-2xl border border-white/15 bg-white/[0.08] text-white text-[18px] font-bold text-center outline-none focus:border-amber-500 transition-all hebrew-prayer"
-            />
-            <div className="flex gap-[10px]">
-              {['male','female'].map(g => (
-                <button
-                  key={g}
-                  onClick={() => setGender(g)}
-                  className={`flex-1 py-3 rounded-[14px] border-2 text-white text-[15px] font-bold cursor-pointer hebrew-prayer transition-all ${gender===g ? 'border-amber-600 bg-amber-600/20' : 'border-white/15 bg-white/[0.08]'}`}
-                >
-                  👤 {g==='male'?'זכר':'נקבה'}
-                </button>
+          {/* HOW MANY CARDS */}
+          <div className="w-full max-w-[700px] px-5 mt-3">
+            <label className="text-[11px] font-bold text-amber-200/60 hebrew-prayer text-center block mb-2">כמה קלפים?</label>
+            <div className="flex gap-2 justify-center">
+              {[1,2,3,4,5].map(n => (
+                <button key={n} onClick={() => setActiveCount(n)}
+                  className={`w-10 h-10 rounded-xl font-bold text-lg hebrew-prayer transition-all ${activeCount===n ? 'bg-amber-600 text-white' : 'bg-white/[0.06] text-white/40 border border-white/10'}`}
+                >{n}</button>
               ))}
             </div>
-
-            {/* TOPIC SELECTOR - only for prayers */}
-            {category === 'prayer' && (
-              <select
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                className="w-full py-[14px] px-[18px] rounded-2xl border border-white/15 bg-[#1a1a1a] text-white text-[16px] font-bold text-center outline-none focus:border-amber-500 transition-all hebrew-prayer"
-              >
-                {TOPIC_OPTIONS.map(t => (
-                  <option key={t.key} value={t.key} style={{background:'#1a1a1a',color:'white'}}>
-                    {t.emoji} {t.label}
-                  </option>
-                ))}
-              </select>
-            )}
-
           </div>
 
-          {/* PREVIEW — card size: 10×15cm = 1181×1772px */}
-          <div className="print-area w-full max-w-[500px] px-5 mt-4 relative">
-            <div style={{ width:'100%', aspectRatio:'1181/1772', borderRadius:'12px', overflow:'hidden', position:'relative' }}>
-              <CardComponent {...cardProps} mode="a4" />
+          {/* TOPIC SELECTOR - only for prayers */}
+          {category === 'prayer' && (
+            <div className="w-full max-w-[700px] px-5 mt-3">
+              <select value={topic} onChange={(e) => setTopic(e.target.value)}
+                className="w-full py-[12px] px-[16px] rounded-2xl border border-white/15 bg-[#1a1a1a] text-white text-[15px] font-bold text-center outline-none focus:border-amber-500 transition-all hebrew-prayer">
+                {TOPIC_OPTIONS.map(t => (
+                  <option key={t.key} value={t.key} style={{background:'#1a1a1a',color:'white'}}>{t.emoji} {t.label}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* NAME INPUT ROWS */}
+          <div className="w-full max-w-[700px] px-5 mt-3 flex flex-col gap-2">
+            {activeRows.map((row, idx) => (
+              <div key={idx} className="flex gap-2 items-center">
+                <span className="text-amber-500/50 text-[13px] font-bold w-5">{idx+1}</span>
+                <input
+                  type="text" value={row.name}
+                  onChange={(e) => updateRow(idx, 'name', e.target.value)}
+                  placeholder="הקלידו שם" maxLength={15}
+                  className="flex-1 py-[10px] px-[14px] rounded-xl border border-white/15 bg-white/[0.08] text-white text-[16px] font-bold text-center outline-none focus:border-amber-500 transition-all hebrew-prayer"
+                />
+                <button onClick={() => updateRow(idx, 'gender', row.gender==='male'?'female':'male')}
+                  className="px-3 py-[10px] rounded-xl border border-white/15 bg-white/[0.06] text-white text-[13px] font-bold hebrew-prayer transition-all hover:bg-white/10 whitespace-nowrap">
+                  {row.gender==='male'?'👤 זכר':'👤 נקבה'}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* PREVIEW GRID — card size: 10×15cm = 1181×1772px */}
+          <div className="print-area w-full max-w-[700px] px-5 mt-4">
+            <div style={{ display:'grid', gridTemplateColumns: activeCount <= 2 ? '1fr' : 'repeat(2, 1fr)', gap:'12px' }}>
+              {activeRows.map((row, idx) => (
+                <div key={idx} className="print-card" style={{ aspectRatio:'1181/1772', borderRadius:'12px', overflow:'hidden', position:'relative' }}>
+                  <CardComponent {...getCardProps(row, idx)} mode="a4" />
+                </div>
+              ))}
             </div>
           </div>
 
           {/* PRINT BUTTON */}
           <button
-            onClick={() => { logPrint(licenseKey, eventLine || 'אירוע', userName || 'ללא שם', gender, category, topic, eventLine); window.print(); }}
-            className="w-full max-w-[500px] mt-4 mx-5 py-[18px] rounded-3xl border-none text-[20px] font-black text-white cursor-pointer hebrew-prayer hover:opacity-90 transition-all active:scale-95"
+            onClick={() => {
+              activeRows.forEach((row, idx) => {
+                if (row.name.trim()) logPrint(licenseKey, eventLine || 'אירוע', row.name, row.gender, category, topic, eventLine);
+              });
+              window.print();
+            }}
+            className="w-full max-w-[700px] mt-4 mx-5 py-[18px] rounded-3xl border-none text-[20px] font-black text-white cursor-pointer hebrew-prayer hover:opacity-90 transition-all active:scale-95"
             style={{background:'linear-gradient(135deg, #b45309, #92400e)'}}
           >
-            🖨️ הדפסת הקלף
+            🖨️ הדפסת {activeCount > 1 ? activeCount + ' קלפים' : 'הקלף'}
           </button>
 
           {/* STUDIO FOOTER */}
