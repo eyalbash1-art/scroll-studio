@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>דשבורד ניהול | תפילה מהשקט</title>
+  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Frank Ruhl Libre',serif; }
+    body { background:#0a0a0a; color:white; min-height:100vh; }
+    
+    /* Login */
+    .login-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; }
+    .login-box { max-width:380px; width:100%; padding:40px 24px; text-align:center; }
+    .login-box input { width:100%; padding:14px; border-radius:14px; border:1.5px solid rgba(255,255,255,0.12); background:rgba(255,255,255,0.06); color:white; font-size:16px; font-weight:700; text-align:center; outline:none; margin-bottom:12px; font-family:inherit; }
+    .login-box input:focus { border-color:#b45309; }
+    .login-box button { width:100%; padding:14px; border:none; border-radius:14px; background:linear-gradient(135deg,#b45309,#92400e); color:white; font-size:18px; font-weight:900; cursor:pointer; font-family:inherit; }
+    .login-error { color:#ef4444; font-size:13px; margin-top:8px; font-weight:700; }
+
+    /* Dashboard */
+    .dashboard { display:none; }
+    .header { background:rgba(0,0,0,0.5); border-bottom:1px solid rgba(255,255,255,0.1); padding:16px 24px; display:flex; justify-content:space-between; align-items:center; }
+    .header h1 { font-size:20px; font-weight:900; }
+    .header button { background:none; border:1px solid rgba(255,255,255,0.15); color:white; padding:8px 16px; border-radius:10px; cursor:pointer; font-size:12px; font-weight:700; font-family:inherit; }
+
+    .stats-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; padding:20px 24px; }
+    .stat-card { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:20px; text-align:center; }
+    .stat-number { font-size:36px; font-weight:900; color:#f59e0b; }
+    .stat-label { font-size:12px; color:rgba(255,255,255,0.4); font-weight:700; margin-top:4px; }
+
+    .section { padding:16px 24px; }
+    .section h2 { font-size:18px; font-weight:900; color:#f59e0b; margin-bottom:12px; }
+
+    /* Tabs */
+    .tabs { display:flex; gap:8px; padding:0 24px; margin-top:8px; }
+    .tab { padding:10px 20px; border-radius:12px; border:1.5px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.03); color:rgba(255,255,255,0.5); font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+    .tab.active { background:#b45309; border-color:#b45309; color:white; }
+
+    /* Tables */
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th { background:rgba(255,255,255,0.05); padding:10px 12px; text-align:right; font-weight:700; color:rgba(255,255,255,0.5); font-size:11px; letter-spacing:1px; }
+    td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.05); color:rgba(255,255,255,0.8); }
+    tr:hover td { background:rgba(255,255,255,0.02); }
+
+    .badge { display:inline-block; padding:3px 10px; border-radius:8px; font-size:11px; font-weight:700; }
+    .badge-tfila { background:rgba(239,68,68,0.15); color:#ef4444; }
+    .badge-shem { background:rgba(59,130,246,0.15); color:#3b82f6; }
+    .badge-active { background:rgba(34,197,94,0.15); color:#22c55e; }
+    .badge-expired { background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.3); }
+
+    /* Key generator */
+    .gen-form { display:grid; grid-template-columns:1fr 1fr; gap:12px; max-width:600px; }
+    .gen-form.full { grid-column:1/-1; }
+    .gen-form label { font-size:11px; color:rgba(217,119,6,0.7); font-weight:700; margin-bottom:4px; display:block; }
+    .gen-form input, .gen-form select { width:100%; padding:12px; border-radius:12px; border:1.5px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:white; font-size:14px; font-weight:700; outline:none; font-family:inherit; }
+    .gen-form input:focus, .gen-form select:focus { border-color:#b45309; }
+    .gen-form select option { background:#1a1a1a; }
+    .gen-btn { grid-column:1/-1; padding:14px; border:none; border-radius:14px; background:linear-gradient(135deg,#b45309,#92400e); color:white; font-size:16px; font-weight:900; cursor:pointer; font-family:inherit; margin-top:4px; }
+    .gen-result { grid-column:1/-1; background:rgba(217,119,6,0.08); border:2px solid rgba(217,119,6,0.3); border-radius:14px; padding:16px; text-align:center; margin-top:8px; }
+    .gen-key { font-family:monospace; font-size:16px; font-weight:900; color:#f59e0b; letter-spacing:2px; direction:ltr; margin:8px 0; }
+
+    /* Live log */
+    .live-dot { width:8px; height:8px; background:#22c55e; border-radius:50%; display:inline-block; margin-left:6px; animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+    .log-item { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:13px; }
+    .log-item:hover { background:rgba(255,255,255,0.02); }
+    .log-time { color:rgba(255,255,255,0.3); font-size:11px; font-family:monospace; }
+    .log-name { color:#f59e0b; font-weight:900; }
+    .log-event { color:rgba(255,255,255,0.4); font-size:11px; }
+
+    .empty-state { text-align:center; padding:40px; color:rgba(255,255,255,0.2); font-size:14px; }
+  </style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-box">
+      <div style="font-size:48px;margin-bottom:16px">🛡️</div>
+      <h1 style="font-size:24px;font-weight:900;margin-bottom:4px">דשבורד ניהול</h1>
+      <p style="color:rgba(255,255,255,0.3);font-size:13px;margin-bottom:24px">סטודיו תפילה מהשקט</p>
+      <input type="text" id="adminUser" placeholder="שם משתמש" />
+      <input type="password" id="adminPass" placeholder="סיסמה" />
+      <button onclick="adminLogin()">🔓 כניסה</button>
+      <div class="login-error" id="loginError"></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="dashboard" id="dashboard">
+    <div class="header">
+      <h1>🛡️ דשבורד ניהול — תפילה מהשקט</h1>
+      <button onclick="adminLogout()">🔒 יציאה</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number" id="statActiveEvents">0</div>
+        <div class="stat-label">אירועים פעילים עכשיו</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statTodayPrints">0</div>
+        <div class="stat-label">הדפסות היום</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statTotalPrints">0</div>
+        <div class="stat-label">הדפסות סה"כ</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="statTotalKeys">0</div>
+        <div class="stat-label">מפתחות שנוצרו</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('live')" id="tabLive">🔴 לייב<span class="live-dot"></span></div>
+      <div class="tab" onclick="switchTab('keys')" id="tabKeys">🔑 מפתחות</div>
+      <div class="tab" onclick="switchTab('generate')" id="tabGenerate">➕ מפתח חדש</div>
+      <div class="tab" onclick="switchTab('history')" id="tabHistory">📋 היסטוריה</div>
+    </div>
+
+    <!-- LIVE TAB -->
+    <div class="section" id="sectionLive">
+      <h2>🔴 הדפסות בזמן אמת</h2>
+      <div id="liveLog"><div class="empty-state">ממתין להדפסות...</div></div>
+    </div>
+
+    <!-- KEYS TAB -->
+    <div class="section" id="sectionKeys" style="display:none">
+      <h2>🔑 מפתחות פעילים</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>מפתח</th><th>סוג</th><th>אירוע</th><th>תוקף</th><th>סטטוס</th><th>הדפסות</th></tr></thead>
+          <tbody id="keysTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- GENERATE TAB -->
+    <div class="section" id="sectionGenerate" style="display:none">
+      <h2>➕ יצירת מפתח חדש</h2>
+      <div class="gen-form">
+        <div>
+          <label>שם אירוע / לקוח:</label>
+          <input type="text" id="genEvent" placeholder="חתונת דני ואירית" />
+        </div>
+        <div>
+          <label>סוג רישיון:</label>
+          <select id="genType">
+            <option value="TFILA">🙏 תפילות</option>
+            <option value="SHEM">✨ פירוש השם</option>
+          </select>
+        </div>
+        <div>
+          <label>תאריך התחלה:</label>
+          <input type="date" id="genStart" />
+        </div>
+        <div>
+          <label>משך:</label>
+          <select id="genDuration">
+            <option value="3">3 שעות</option>
+            <option value="6">6 שעות</option>
+            <option value="12">12 שעות</option>
+            <option value="24" selected>יום אחד</option>
+            <option value="48">יומיים</option>
+            <option value="168">שבוע</option>
+            <option value="720">חודש</option>
+          </select>
+        </div>
+        <button class="gen-btn" onclick="generateNewKey()">✨ צור מפתח</button>
+        <div class="gen-result" id="genResult" style="display:none"></div>
+      </div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div class="section" id="sectionHistory" style="display:none">
+      <h2>📋 היסטוריית הדפסות</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>זמן</th><th>שם</th><th>אירוע</th><th>סוג</th><th>נושא</th></tr></thead>
+          <tbody id="historyTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== SUPABASE CONFIG =====
+    const SUPABASE_URL = 'https://rdzexiqbkzsjyvzigwad.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_-2kn7-czttV70JIsKDcMqA_Hob1MYba';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let isLoggedIn = false;
+
+    // ===== ADMIN AUTH =====
+    async function adminLogin() {
+      const user = document.getElementById('adminUser').value.trim();
+      const pass = document.getElementById('adminPass').value;
+      document.getElementById('loginError').textContent = '';
+
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('*')
+        .eq('username', user)
+        .eq('password_hash', pass)
+        .single();
+
+      if (error || !data) {
+        document.getElementById('loginError').textContent = '❌ שם משתמש או סיסמה שגויים';
+        return;
+      }
+
+      isLoggedIn = true;
+      sessionStorage.setItem('admin_logged', 'true');
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadDashboard();
+      startRealtime();
+    }
+
+    function adminLogout() {
+      isLoggedIn = false;
+      sessionStorage.removeItem('admin_logged');
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('dashboard').style.display = 'none';
+    }
+
+    // Auto-login if session exists
+    if (sessionStorage.getItem('admin_logged') === 'true') {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      isLoggedIn = true;
+      loadDashboard();
+      startRealtime();
+    }
+
+    // ===== TABS =====
+    function switchTab(tab) {
+      ['live','keys','generate','history'].forEach(t => {
+        document.getElementById('section' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === tab ? 'block' : 'none';
+        document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1)).className = t === tab ? 'tab active' : 'tab';
+      });
+      if (tab === 'keys') loadKeys();
+      if (tab === 'history') loadHistory();
+    }
+
+    // ===== LOAD DASHBOARD DATA =====
+    async function loadDashboard() {
+      // Total keys
+      const { count: totalKeys } = await supabase.from('license_keys').select('*', { count: 'exact', head: true });
+      document.getElementById('statTotalKeys').textContent = totalKeys || 0;
+
+      // Active events (keys valid now)
+      const now = new Date().toISOString();
+      const { count: activeEvents } = await supabase.from('license_keys').select('*', { count: 'exact', head: true })
+        .lte('start_date', now).gte('end_date', now).eq('is_active', true);
+      document.getElementById('statActiveEvents').textContent = activeEvents || 0;
+
+      // Today's prints
+      const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+      const { count: todayPrints } = await supabase.from('print_logs').select('*', { count: 'exact', head: true })
+        .gte('created_at', todayStart.toISOString());
+      document.getElementById('statTodayPrints').textContent = todayPrints || 0;
+
+      // Total prints
+      const { count: totalPrints } = await supabase.from('print_logs').select('*', { count: 'exact', head: true });
+      document.getElementById('statTotalPrints').textContent = totalPrints || 0;
+
+      // Load live log
+      loadLiveLog();
+    }
+
+    // ===== LIVE LOG =====
+    async function loadLiveLog() {
+      const { data } = await supabase.from('print_logs').select('*').order('created_at', { ascending: false }).limit(50);
+      renderLiveLog(data || []);
+    }
+
+    function renderLiveLog(logs) {
+      const el = document.getElementById('liveLog');
+      if (!logs.length) { el.innerHTML = '<div class="empty-state">ממתין להדפסות...</div>'; return; }
+      el.innerHTML = logs.map(l => {
+        const time = new Date(l.created_at).toLocaleTimeString('he-IL', { hour:'2-digit', minute:'2-digit' });
+        const date = new Date(l.created_at).toLocaleDateString('he-IL');
+        return `<div class="log-item">
+          <div><span class="log-name">${l.printed_name}</span> <span class="log-event">— ${l.event_name}</span></div>
+          <div><span class="badge ${l.category==='prayer'?'badge-tfila':'badge-shem'}">${l.category==='prayer'?'תפילה':'שם'}</span></div>
+          <div class="log-time">${time} ${date}</div>
+        </div>`;
+      }).join('');
+    }
+
+    // ===== REALTIME =====
+    function startRealtime() {
+      supabase.channel('print_logs_changes')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'print_logs' }, (payload) => {
+          loadDashboard(); // Refresh stats + log
+        })
+        .subscribe();
+
+      supabase.channel('license_keys_changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'license_keys' }, () => {
+          loadDashboard();
+        })
+        .subscribe();
+    }
+
+    // ===== KEYS TABLE =====
+    async function loadKeys() {
+      const { data } = await supabase.from('license_keys').select('*').order('created_at', { ascending: false });
+      const el = document.getElementById('keysTable');
+      if (!data || !data.length) { el.innerHTML = '<tr><td colspan="6" class="empty-state">אין מפתחות</td></tr>'; return; }
+
+      // Get print counts per key
+      const { data: prints } = await supabase.from('print_logs').select('license_key');
+      const printCounts = {};
+      (prints || []).forEach(p => { printCounts[p.license_key] = (printCounts[p.license_key] || 0) + 1; });
+
+      const now = new Date();
+      el.innerHTML = data.map(k => {
+        const start = new Date(k.start_date);
+        const end = new Date(k.end_date);
+        const isActive = now >= start && now <= end && k.is_active;
+        const isExpired = now > end;
+        return `<tr>
+          <td style="font-family:monospace;font-size:11px;direction:ltr;color:#f59e0b">${k.key}</td>
+          <td><span class="badge ${k.type==='TFILA'?'badge-tfila':'badge-shem'}">${k.type==='TFILA'?'תפילות':'שמות'}</span></td>
+          <td>${k.event_name}</td>
+          <td style="font-size:11px">${start.toLocaleDateString('he-IL')} — ${end.toLocaleDateString('he-IL')}</td>
+          <td><span class="badge ${isActive?'badge-active':isExpired?'badge-expired':'badge-expired'}">${isActive?'פעיל':isExpired?'פג תוקף':'לא התחיל'}</span></td>
+          <td style="font-weight:900;color:#f59e0b">${printCounts[k.key] || 0}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ===== GENERATE KEY =====
+    document.getElementById('genStart').value = new Date().toISOString().split('T')[0];
+
+    async function generateNewKey() {
+      const eventName = document.getElementById('genEvent').value.trim();
+      const type = document.getElementById('genType').value;
+      const startStr = document.getElementById('genStart').value;
+      const hours = parseInt(document.getElementById('genDuration').value);
+
+      if (!eventName || !startStr) { alert('מלאו את כל השדות'); return; }
+
+      const startDate = new Date(startStr);
+      const endDate = new Date(startDate.getTime() + hours * 60 * 60 * 1000);
+      const fmt = d => d.getFullYear().toString() + (d.getMonth()+1).toString().padStart(2,'0') + d.getDate().toString().padStart(2,'0');
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = ''; for (let i=0;i<4;i++) code += chars[Math.floor(Math.random()*chars.length)];
+      const key = `${type}-${fmt(startDate)}-${fmt(endDate)}-${code}`;
+
+      const { error } = await supabase.from('license_keys').insert({
+        key, type, event_name: eventName,
+        start_date: startDate.toISOString(),
+        end_date: endDate.toISOString(),
+        duration_hours: hours
+      });
+
+      const resultEl = document.getElementById('genResult');
+      if (error) {
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = `<div style="color:#ef4444">❌ שגיאה: ${error.message}</div>`;
+      } else {
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = `
+          <div style="color:rgba(255,255,255,0.6);font-weight:700">✅ מפתח נוצר!</div>
+          <div class="gen-key">${key}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.4)">📌 ${eventName} | ⏱️ ${hours} שעות</div>
+          <button onclick="navigator.clipboard.writeText('${key}').then(()=>alert('הועתק!'))" style="margin-top:10px;padding:10px 20px;border:1px solid rgba(255,255,255,0.15);background:none;color:white;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:700">📋 העתק מפתח</button>
+        `;
+        loadDashboard();
+      }
+    }
+
+    // ===== HISTORY =====
+    async function loadHistory() {
+      const { data } = await supabase.from('print_logs').select('*').order('created_at', { ascending: false }).limit(200);
+      const el = document.getElementById('historyTable');
+      if (!data || !data.length) { el.innerHTML = '<tr><td colspan="5" class="empty-state">אין היסטוריה</td></tr>'; return; }
+      el.innerHTML = data.map(l => {
+        const time = new Date(l.created_at).toLocaleString('he-IL');
+        return `<tr>
+          <td style="font-size:11px;font-family:monospace">${time}</td>
+          <td style="font-weight:900;color:#f59e0b">${l.printed_name}</td>
+          <td>${l.event_name}</td>
+          <td><span class="badge ${l.category==='prayer'?'badge-tfila':'badge-shem'}">${l.category==='prayer'?'תפילה':'שם'}</span></td>
+          <td>${l.topic || '—'}</td>
+        </tr>`;
+      }).join('');
+    }
+  </script>
+</body>
+</html>

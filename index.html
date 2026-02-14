@@ -8,6 +8,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&display=swap" rel="stylesheet">
@@ -435,6 +436,23 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       );
     };
 
+    /* ===== SUPABASE CONFIG ===== */
+    const _sb = window.supabase ? window.supabase.createClient(
+      'https://rdzexiqbkzsjyvzigwad.supabase.co',
+      'sb_publishable_-2kn7-czttV70JIsKDcMqA_Hob1MYba'
+    ) : null;
+
+    const logPrint = async (licenseKey, eventName, printedName, gender, category, topic, eventLine) => {
+      if (!_sb) return;
+      try {
+        await _sb.from('print_logs').insert({
+          license_key: licenseKey, event_name: eventName,
+          printed_name: printedName, gender, category,
+          topic: topic || '', event_line: eventLine || ''
+        });
+      } catch(e) { console.log('Log error:', e); }
+    };
+
     /* ===== QR CODE URL ===== */
     const QR_URL = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=3d2b1f&bgcolor=f0debb&data=https://eyalbash1-art.github.io/scroll-studio/qr.html";
 
@@ -811,7 +829,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
 
           {/* PRINT BUTTON */}
           <button
-            onClick={() => window.print()}
+            onClick={() => { logPrint(licenseKey, eventLine || 'אירוע', userName || 'ללא שם', gender, category, topic, eventLine); window.print(); }}
             className="w-full max-w-[500px] mt-4 mx-5 py-[18px] rounded-3xl border-none text-[20px] font-black text-white cursor-pointer hebrew-prayer hover:opacity-90 transition-all active:scale-95"
             style={{background:'linear-gradient(135deg, #b45309, #92400e)'}}
           >
