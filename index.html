@@ -45,7 +45,41 @@
     .animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
     @keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
     .animate-float { animation: float 6s ease-in-out infinite; }
-    @media print { body { background: white !important; } header, footer, .no-print { display: none !important; } }
+    /* ===== PRINT STYLES ===== */
+    @media print {
+      /* Hide everything except the card */
+      body { background: white !important; margin: 0 !important; padding: 0 !important; }
+      header, footer, nav, button, select, input, label, a,
+      .no-print, .watermark-overlay, .lock-badge { display: none !important; }
+      
+      /* Hide the card background image — real parchment paper is in the printer */
+      .card-bg { display: none !important; }
+      
+      /* Make the card container fill the page at exact size */
+      .card-container {
+        width: 100mm !important; height: 150mm !important;
+        position: relative !important; overflow: hidden !important;
+        border-radius: 0 !important; box-shadow: none !important;
+        aspect-ratio: auto !important; margin: 0 !important; padding: 0 !important;
+      }
+      
+      /* Text layer stays in same position, black text only */
+      .card-text-layer {
+        position: absolute !important;
+        top: 14% !important; left: 14% !important; right: 14% !important; bottom: 24% !important;
+        display: flex !important; flex-direction: column !important;
+        justify-content: center !important; align-items: center !important;
+        text-align: center !important; color: #000 !important;
+      }
+      .card-text-layer * { color: #000 !important; text-shadow: none !important; }
+      .card-text-layer .divider-line { background: #000 !important; }
+
+      /* Hide all non-card elements */
+      .min-h-screen > *:not(.print-area) { display: none !important; }
+      .print-area { display: block !important; width: 100mm !important; height: 150mm !important; margin: 0 !important; padding: 0 !important; }
+
+      @page { size: 100mm 150mm; margin: 0; }
+    }
 
     /* ===== ANTI-COPY PROTECTIONS ===== */
     .protected-area {
@@ -403,21 +437,20 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       );
 
       return (
-        <div style={{ width:'100%', height:'100%', position:'relative' }}>
-          <img src={window.CARD_BG} style={{ width:'100%', height:'100%', objectFit:'fill' }} alt="" />
-          {/* Text area on parchment */}
-          <div style={{ position:'absolute', top:'14%', left:'14%', right:'14%', bottom:'24%', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', textAlign:'center', overflow:'hidden' }}>
+        <div className="card-container" style={{ width:'100%', height:'100%', position:'relative' }}>
+          <img className="card-bg" src={window.CARD_BG} style={{ width:'100%', height:'100%', objectFit:'fill' }} alt="" />
+          <div className="card-text-layer" style={{ position:'absolute', top:'14%', left:'14%', right:'14%', bottom:'24%', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', textAlign:'center', overflow:'hidden' }}>
             <div className="scroll-text hebrew-prayer" style={{ fontSize: c.openSize+'px', color:'#8c6a42', letterSpacing:'2px', marginBottom: c.gap+'px' }}>
               באותיות שמך הושם סימן מהשם
             </div>
-            <Divider w={c.divW} />
+            <div className="divider-line" style={{ width: c.divW+'px', height: '1px', background: 'linear-gradient(90deg, transparent, #8c6a42, transparent)', margin: `${c.gap}px auto` }}></div>
             <div style={{ width:'100%', margin:`${c.gap*0.5}px 0` }}>
               <ScaledText text={displayName} baseFontSize={c.nameSize} letterSpacing={c.nameLS} fontWeight={900} maxWidthPercent={90} />
             </div>
             <div style={{ width:'100%', margin:`${c.gap*0.5}px 0` }}>
               <ScaledText text={interpretationLine} baseFontSize={c.interpSize} letterSpacing={c.interpLS} fontWeight={700} color="#3d2b1f" maxWidthPercent={92} />
             </div>
-            <Divider w={c.divW * 0.7} />
+            <div className="divider-line" style={{ width: (c.divW*0.7)+'px', height: '1px', background: 'linear-gradient(90deg, transparent, #8c6a42, transparent)', margin: `${c.gap}px auto` }}></div>
             <div className="scroll-text hebrew-prayer" style={{
               fontSize: c.blessSize+'px', lineHeight: c.blessLH, fontWeight: 400, color: '#2b1810',
               whiteSpace: 'pre-line', maxWidth: '92%', textAlign: 'center'
@@ -493,18 +526,17 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       );
 
       return (
-        <div style={{ width:'100%', height:'100%', position:'relative' }}>
-          <img src={window.CARD_BG} style={{ width:'100%', height:'100%', objectFit:'fill' }} alt="" />
-          {/* Text area on parchment */}
-          <div style={{ position:'absolute', top:'14%', left:'14%', right:'14%', bottom:'24%', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', textAlign:'center', overflow:'hidden' }}>
+        <div className="card-container" style={{ width:'100%', height:'100%', position:'relative' }}>
+          <img className="card-bg" src={window.CARD_BG} style={{ width:'100%', height:'100%', objectFit:'fill' }} alt="" />
+          <div className="card-text-layer" style={{ position:'absolute', top:'14%', left:'14%', right:'14%', bottom:'24%', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', textAlign:'center', overflow:'hidden' }}>
             <div className="scroll-text hebrew-prayer" style={{ fontSize: c.titleSize+'px', color:'#6b4f2e', fontWeight:900, letterSpacing:'2px', marginBottom: c.gap+'px' }}>
               {title}
             </div>
-            <Divider w={c.divW} />
+            <div className="divider-line" style={{ width: c.divW+'px', height: '1px', background: 'linear-gradient(90deg, transparent, #8c6a42, transparent)', margin: `${c.gap}px auto` }}></div>
             <div style={{ width:'100%', margin:`${c.gap*0.5}px 0` }}>
               <ScaledText text={name} baseFontSize={c.nameSize} letterSpacing={4} fontWeight={900} maxWidthPercent={90} />
             </div>
-            <Divider w={c.divW * 0.7} />
+            <div className="divider-line" style={{ width: (c.divW*0.7)+'px', height: '1px', background: 'linear-gradient(90deg, transparent, #8c6a42, transparent)', margin: `${c.gap}px auto` }}></div>
             <div className="scroll-text hebrew-prayer" style={{
               fontSize: c.prayerSize+'px', lineHeight: c.prayerLH, fontWeight: 700, color: '#2b1810',
               whiteSpace: 'pre-line', maxWidth: '92%', textAlign: 'center'
@@ -703,7 +735,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
           </div>
 
           {/* PREVIEW — card size: 10×15cm = 1181×1772px */}
-          <div className="w-full max-w-[500px] px-5 mt-4 relative">
+          <div className="print-area w-full max-w-[500px] px-5 mt-4 relative">
             <div style={{ width:'100%', aspectRatio:'1181/1772', borderRadius:'12px', overflow:'hidden', position:'relative' }}>
               <CardComponent {...cardProps} mode="a4" />
             </div>
