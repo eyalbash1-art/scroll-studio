@@ -308,7 +308,7 @@
     /* ===== PERSONAL BLESSINGS - EYAL BASH STYLE ===== */
     /* God/השם is ALWAYS masculine (הניח, הוא, יודע, אוהב, מחובר, גואל, דובר, רואה, נתן, מחכה) */
     /* Only the PERSON changes: אתה/את, תקשיב/תקשיבי, נוכח/נוכחת, etc. */
-    const getSpiritualBlessing = (name, gender) => {
+    const getSpiritualBlessing = (name, gender, variantIndex = 0) => {
       if (!name.trim()) return '';
       const m = gender === 'male';
       const letters = name.replace(/\s/g,'').split('');
@@ -322,7 +322,7 @@
         `${name} —`,
       ];
       const opening = openings[letters.length % openings.length];
-      const idx = (letters.length * 7 + letters[0].charCodeAt(0)) % 10;
+      const idx = (letters.length * 7 + letters[0].charCodeAt(0) + variantIndex * 3) % 10;
 
       const t = [
 // 0
@@ -499,7 +499,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       const len = cleanName.length;
       const displayName = cleanName.split('').join('  ');
       const interpretationLine = getInterpretationLine(name, variantIndex);
-      const blessing = getSpiritualBlessing(name, gender);
+      const blessing = getSpiritualBlessing(name, gender, variantIndex);
 
       const cfg = {
         a4: { nameSize: len<=3?56:len<=5?46:36, nameLS: len<=3?12:len<=5?8:5, interpSize: 15, interpLS: 2, blessSize: 13, blessLH: 1.75, openSize: 12, divW: 90, gap: 8, qr: 50 }
@@ -566,8 +566,8 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
         female: ['אבא יקר,','הנני כאן.','מבקשת את הנוכחות שלך בי,','במודעות נוכחת מלאה.','אני יודעת שאתה תמיד כאן.','גם אם אני לא רואה,','גם אם אני לא שומעת אותך.','אתה כאן, כי אין הפרדה בינינו.','עלי רק לקרוא ותענני.','תודה. אמן.']
       },
       surrender: {
-        male: ['השם יתברך אבא,','הרצון שלך בשבילי','ולא שום רצון אחר.','אתה יודע אותי ורואה אותי','כאור בלב שלך.','תן לי את האומץ לראות את האמת בך,','במודעות נוכחת מלאה.','רצונך הוא רצוני.','אני הוא עבדך הנאמן.','תודה. אמן.'],
-        female: ['השם יתברך אבא,','הרצון שלך בשבילי','ולא שום רצון אחר.','אתה יודע אותי ורואה אותי','כאור בלב שלך.','תן לי את האומץ לראות את האמת בך,','במודעות נוכחת מלאה.','רצונך הוא רצוני.','אני היא שפחתך הנאמנה.','תודה. אמן.']
+        male: ['השם יתברך אבא,','הרצון שלך בשבילי','ולא שום רצון אחר.','אתה יודע אותי ורואה אותי','כאור בלב שלך.','תן לי את האומץ לראות את האמת בך,','במודעות נוכחת מלאה.','רצונך הוא רצוני.','הנני כאן לרצונך.','תודה. אמן.'],
+        female: ['השם יתברך אבא,','הרצון שלך בשבילי','ולא שום רצון אחר.','אתה יודע אותי ורואה אותי','כאור בלב שלך.','תן לי את האומץ לראות את האמת בך,','במודעות נוכחת מלאה.','רצונך הוא רצוני.','הנני כאן לרצונך.','תודה. אמן.']
       },
       release: {
         male: ['אבא יקר,','אני לא יודע כלום.','אני מבקש שאתה תוביל אותי.','תן לי לשחרר את השליטה,','במודעות נוכחת מלאה.','כי רק אחד מכוון מהלב.','הוא תמיד עלינו חושב.','גם אם החלום עדיין כואב,','הוא מחכה לנו.','בבית אוהב הוא הלב. אמן.'],
@@ -581,20 +581,31 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
 
     const TOPIC_TITLES = {
       love: '❤️ תפילת אהבה', light: '✨ תפילת אור', security: '🛡️ תפילת ביטחון',
-      gratitude: '🙏 תפילת הודיה', presence: '🕊️ תפילת נוכחות', surrender: '🤲 תפילת כניעה',
+      gratitude: '🙏 תפילת הודיה', presence: '🕊️ תפילת נוכחות', surrender: '🤲 קבלת כל הטוב',
       release: '🌊 תפילת שחרור', closeness: '💛 תפילת קרבה'
     };
 
     const TOPIC_OPTIONS = [
       {key:'love', emoji:'❤️', label:'אהבה'}, {key:'light', emoji:'✨', label:'אור'},
       {key:'security', emoji:'🛡️', label:'ביטחון'}, {key:'gratitude', emoji:'🙏', label:'הודיה'},
-      {key:'presence', emoji:'🕊️', label:'נוכחות'}, {key:'surrender', emoji:'🤲', label:'כניעה'},
+      {key:'presence', emoji:'🕊️', label:'נוכחות'}, {key:'surrender', emoji:'🤲', label:'קבלת כל הטוב'},
       {key:'release', emoji:'🌊', label:'שחרור'}, {key:'closeness', emoji:'💛', label:'קרבה'}
     ];
 
     /* ===== PRAYER CARD ===== */
     const PrayerCard = ({ name, gender, topic, mode = 'a4', eventLine = '', variantIndex = 0 }) => {
-      const prayer = PRAYERS[topic]?.[gender] || PRAYERS.love.male;
+      const basePrayer = PRAYERS[topic]?.[gender] || PRAYERS.love.male;
+      // Shuffle prayer lines slightly based on variantIndex for diversity
+      const prayer = variantIndex === 0 ? basePrayer : (() => {
+        const lines = [...basePrayer];
+        // Keep first line (greeting) and last line (amen) — shuffle middle
+        const first = lines[0];
+        const last = lines[lines.length - 1];
+        const middle = lines.slice(1, -1);
+        // Rotate middle lines by variantIndex positions
+        const rotated = [...middle.slice(variantIndex % middle.length), ...middle.slice(0, variantIndex % middle.length)];
+        return [first, ...rotated, last];
+      })();
       const title = TOPIC_TITLES[topic] || 'תפילה';
 
       const cfg = {
