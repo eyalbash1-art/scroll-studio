@@ -528,17 +528,82 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       );
     };
 
+    /* ===== LICENSE KEY SYSTEM ===== */
+    const LICENSE_STORAGE_KEY = 'tfila_license';
+
+    const validateLicense = (key) => {
+      if (!key || typeof key !== 'string') return { valid: false, msg: 'מפתח לא תקין' };
+      const parts = key.trim().toUpperCase().split('-');
+      if (parts.length !== 4 || parts[0] !== 'TFILA') return { valid: false, msg: 'פורמט מפתח לא תקין' };
+      const startStr = parts[1];
+      const endStr = parts[2];
+      if (startStr.length !== 8 || endStr.length !== 8) return { valid: false, msg: 'תאריכים לא תקינים' };
+      const startDate = new Date(parseInt(startStr.substring(0,4)), parseInt(startStr.substring(4,6))-1, parseInt(startStr.substring(6,8)));
+      const endDate = new Date(parseInt(endStr.substring(0,4)), parseInt(endStr.substring(4,6))-1, parseInt(endStr.substring(6,8)), 23, 59, 59);
+      const now = new Date();
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return { valid: false, msg: 'תאריכים לא תקינים' };
+      if (now < startDate) return { valid: false, msg: 'הרישיון עדיין לא התחיל. מתחיל ב-' + startDate.toLocaleDateString('he-IL') };
+      if (now > endDate) return { valid: false, msg: 'הרישיון פג תוקף ב-' + endDate.toLocaleDateString('he-IL') };
+      return { valid: true, msg: 'רישיון בתוקף עד ' + endDate.toLocaleDateString('he-IL'), endDate };
+    };
+
+    /* ===== LOGIN SCREEN ===== */
+    const LoginScreen = ({ onLogin }) => {
+      const [key, setKey] = useState('');
+      const [error, setError] = useState('');
+      const [loading, setLoading] = useState(false);
+
+      const handleSubmit = () => {
+        setLoading(true); setError('');
+        setTimeout(() => {
+          const result = validateLicense(key);
+          if (result.valid) {
+            try { localStorage.setItem(LICENSE_STORAGE_KEY, key); } catch(e) {}
+            onLogin(key);
+          } else { setError(result.msg); }
+          setLoading(false);
+        }, 500);
+      };
+
+      return (
+        <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center px-6" style={{direction:'rtl'}}>
+          <div className="max-w-[400px] w-full text-center">
+            <div style={{fontSize:48,marginBottom:16}}>🔑</div>
+            <h1 className="text-2xl font-black text-white mb-2 hebrew-prayer">כניסה לסטודיו</h1>
+            <p className="text-white/40 text-sm mb-8 hebrew-prayer" style={{fontWeight:400}}>הזינו את מפתח הרישיון שקיבלתם</p>
+            <input type="text" value={key} onChange={(e) => setKey(e.target.value.toUpperCase())} onKeyDown={(e) => e.key==='Enter' && handleSubmit()}
+              placeholder="TFILA-XXXXXXXX-XXXXXXXX-XXXX"
+              className="w-full py-4 px-5 rounded-2xl border-2 border-white/15 bg-white/[0.06] text-white text-[15px] font-bold text-center outline-none focus:border-amber-500 transition-all mb-4"
+              style={{letterSpacing:'2px', fontFamily:'monospace'}} dir="ltr" />
+            {error && <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 mb-4"><p className="text-red-400 text-sm font-bold hebrew-prayer">❌ {error}</p></div>}
+            <button onClick={handleSubmit} disabled={!key.trim() || loading}
+              className="w-full py-4 rounded-2xl font-bold text-lg text-white hebrew-prayer transition-all active:scale-95 disabled:opacity-40"
+              style={{background:'linear-gradient(135deg, #b45309, #92400e)'}}>
+              {loading ? '⏳ בודק...' : '🔓 כניסה'}
+            </button>
+            <p className="text-white/20 text-[11px] mt-6 hebrew-prayer" style={{fontWeight:400}}>אין לכם מפתח? פנו אלינו בוואטסאפ</p>
+            <a href="https://wa.me/972507660022" className="text-[#25D366] text-sm font-bold hebrew-prayer mt-2 inline-block">💬 וואטסאפ</a>
+          </div>
+        </div>
+      );
+    };
+
     /* ===== MAIN APP ===== */
     const App = () => {
+      const [licenseKey, setLicenseKey] = useState(() => { try { return localStorage.getItem(LICENSE_STORAGE_KEY) || ''; } catch(e) { return ''; } });
+      const [isLicensed, setIsLicensed] = useState(() => { try { const s = localStorage.getItem(LICENSE_STORAGE_KEY); return s ? validateLicense(s).valid : false; } catch(e) { return false; } });
       const [view, setView] = useState('home');
       const [userName, setUserName] = useState('');
       const [gender, setGender] = useState('male');
       const [category, setCategory] = useState('scroll');
       const [topic, setTopic] = useState('love');
-      const handleOrder = () => {
-        try { localStorage.setItem('scroll_name', userName); localStorage.setItem('scroll_gender', gender); } catch(e) {}
-        window.open('https://tfilamehasheket.cashcow.co.il/p/%D7%9E%D7%92%D7%99%D7%9C%D7%AA_%D7%94%D7%90%D7%95%D7%A8', '_blank');
-      };
+
+      const handleLogin = (key) => { setLicenseKey(key); setIsLicensed(true); };
+      const handleLogout = () => { setLicenseKey(''); setIsLicensed(false); setView('home'); try { localStorage.removeItem(LICENSE_STORAGE_KEY); } catch(e) {} };
+
+      const licenseInfo = validateLicense(licenseKey);
+      if (isLicensed && !licenseInfo.valid) { handleLogout(); }
+      if (!isLicensed) { return <LoginScreen onLogin={handleLogin} />; }
 
       const CardComponent = category === 'prayer' ? PrayerCard : ScrollCard;
       const cardProps = category === 'prayer'
@@ -587,7 +652,10 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
           <div className="w-full bg-black/50 backdrop-blur-xl border-b border-white/10 px-5 py-3 flex justify-between items-center">
             <button onClick={() => setView('home')} className="text-white/50 hover:text-white text-sm font-bold hebrew-prayer transition-all">← חזרה</button>
             <h1 className="text-[16px] font-bold text-white hebrew-prayer">✨ סטודיו תפילה מהשקט</h1>
-            <div style={{width:50}}></div>
+            <button onClick={handleLogout} className="text-red-400/60 hover:text-red-400 text-[11px] font-bold hebrew-prayer transition-all">🔒 יציאה</button>
+          </div>
+          <div className="w-full bg-green-500/10 border-b border-green-500/20 px-5 py-2 text-center">
+            <span className="text-green-400 text-[11px] font-bold hebrew-prayer">✓ {licenseInfo.msg}</span>
           </div>
 
           {/* CATEGORY TOGGLE */}
@@ -648,30 +716,18 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
           {/* PREVIEW — card size: 10×15cm = 1181×1772px */}
           <div className="w-full max-w-[500px] px-5 mt-4 relative">
             <div style={{ width:'100%', aspectRatio:'1181/1772', borderRadius:'12px', overflow:'hidden', position:'relative' }}>
-              <div className="protected-area" style={{width:'100%',height:'100%'}}>
-                <CardComponent {...cardProps} mode="a4" />
-              </div>
-              <div className="watermark-overlay">
-                <div className="wm-text wm-1">תצוגה מקדימה בלבד</div>
-                <div className="wm-text wm-2">תפילה מהשקט • איל באש</div>
-                <div className="wm-text wm-3">תצוגה מקדימה בלבד</div>
-                <div className="wm-text wm-logo">תפילה מהשקט</div>
-              </div>
+              <CardComponent {...cardProps} mode="a4" />
             </div>
           </div>
 
-          {/* ORDER BUTTON */}
+          {/* PRINT BUTTON */}
           <button
-            onClick={handleOrder}
+            onClick={() => window.print()}
             className="w-full max-w-[500px] mt-4 mx-5 py-[18px] rounded-3xl border-none text-[20px] font-black text-white cursor-pointer hebrew-prayer hover:opacity-90 transition-all active:scale-95"
             style={{background:'linear-gradient(135deg, #b45309, #92400e)'}}
           >
-            ✓ לרכישה והורדת הקובץ הנקי (20 ₪)
+            🖨️ הדפסת הקלף
           </button>
-
-          <div className="text-center text-[12px] text-white/30 py-2 px-5 max-w-[500px] hebrew-prayer" style={{fontWeight:400}}>
-            🔒 אוהבים את מה שרואים? הזמינו ולאחר התשלום תוכלו להוריד את הקובץ הנקי ללא סימן מים
-          </div>
 
           {/* STUDIO FOOTER */}
           <footer className="w-full bg-black/90 text-white py-8 px-6 text-center border-t border-white/5 mt-8">
