@@ -84,16 +84,20 @@
         aspect-ratio: auto !important; margin: 0 !important; padding: 0 !important;
       }
 
-      /* Text layer — same position, black text */
+      /* Text layer — more room, black text */
       .card-text-layer {
         position: absolute !important;
-        top: 14% !important; left: 14% !important; right: 14% !important; bottom: 24% !important;
+        top: 10% !important; left: 8% !important; right: 8% !important; bottom: 18% !important;
         display: flex !important; flex-direction: column !important;
         justify-content: center !important; align-items: center !important;
         text-align: center !important;
+        overflow: visible !important;
       }
       .card-text-layer * { color: #000 !important; text-shadow: none !important; }
       .card-text-layer .divider-line { background: #000 !important; }
+
+      /* QR code visible in print */
+      .print-qr { visibility: visible !important; display: block !important; }
     }
 
     /* ===== ANTI-COPY PROTECTIONS ===== */
@@ -473,6 +477,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
               {blessing}
             </div>
           </div>
+          <img className="print-qr" src={QR_URL} alt="QR" style={{ position:'absolute', bottom:'18%', left:'8%', width:'10%', aspectRatio:'1/1', borderRadius:'2px' }} />
         </div>
       );
     };
@@ -559,7 +564,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
               {prayer.join('\n')}
             </div>
           </div>
-          {/* QR code - bottom left corner */}
+          <img className="print-qr" src={QR_URL} alt="QR" style={{ position:'absolute', bottom:'18%', left:'8%', width:'10%', aspectRatio:'1/1', borderRadius:'2px' }} />
         </div>
       );
     };
