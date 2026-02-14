@@ -575,7 +575,11 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
     const validateLicense = (key) => {
       if (!key || typeof key !== 'string') return { valid: false, msg: 'מפתח לא תקין' };
       const parts = key.trim().toUpperCase().split('-');
-      if (parts.length !== 4 || parts[0] !== 'TFILA') return { valid: false, msg: 'פורמט מפתח לא תקין' };
+      if (parts.length !== 4) return { valid: false, msg: 'פורמט מפתח לא תקין' };
+      const prefix = parts[0];
+      if (prefix !== 'TFILA' && prefix !== 'SHEM') return { valid: false, msg: 'פורמט מפתח לא תקין' };
+      const type = prefix === 'TFILA' ? 'prayer' : 'scroll';
+      const typeLabel = prefix === 'TFILA' ? 'תפילות' : 'פירוש השם';
       const startStr = parts[1];
       const endStr = parts[2];
       if (startStr.length !== 8 || endStr.length !== 8) return { valid: false, msg: 'תאריכים לא תקינים' };
@@ -585,7 +589,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return { valid: false, msg: 'תאריכים לא תקינים' };
       if (now < startDate) return { valid: false, msg: 'הרישיון עדיין לא התחיל. מתחיל ב-' + startDate.toLocaleDateString('he-IL') };
       if (now > endDate) return { valid: false, msg: 'הרישיון פג תוקף ב-' + endDate.toLocaleDateString('he-IL') };
-      return { valid: true, msg: 'רישיון בתוקף עד ' + endDate.toLocaleDateString('he-IL'), endDate };
+      return { valid: true, type, typeLabel, msg: typeLabel + ' — בתוקף עד ' + endDate.toLocaleDateString('he-IL'), endDate };
     };
 
     /* ===== LOGIN SCREEN ===== */
@@ -636,7 +640,6 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       const [view, setView] = useState('home');
       const [userName, setUserName] = useState('');
       const [gender, setGender] = useState('male');
-      const [category, setCategory] = useState('scroll');
       const [topic, setTopic] = useState('love');
 
       const handleLogin = (key) => { setLicenseKey(key); setIsLicensed(true); };
@@ -645,6 +648,9 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       const licenseInfo = validateLicense(licenseKey);
       if (isLicensed && !licenseInfo.valid) { handleLogout(); }
       if (!isLicensed) { return <LoginScreen onLogin={handleLogin} />; }
+
+      // Category locked by license type
+      const category = licenseInfo.type || 'scroll';
 
       const CardComponent = category === 'prayer' ? PrayerCard : ScrollCard;
       const cardProps = category === 'prayer'
@@ -699,20 +705,11 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
             <span className="text-green-400 text-[11px] font-bold hebrew-prayer">✓ {licenseInfo.msg}</span>
           </div>
 
-          {/* CATEGORY TOGGLE */}
-          <div className="w-full max-w-[500px] px-5 flex gap-[10px] mt-2">
-            <button
-              onClick={() => setCategory('prayer')}
-              className={`flex-1 py-4 rounded-2xl border-2 text-[16px] font-bold cursor-pointer hebrew-prayer transition-all ${category==='prayer' ? 'border-amber-600 bg-amber-600 text-white shadow-lg' : 'border-white/15 bg-white/[0.08] text-white/60'}`}
-            >
-              🙏 תפילות
-            </button>
-            <button
-              onClick={() => setCategory('scroll')}
-              className={`flex-1 py-4 rounded-2xl border-2 text-[16px] font-bold cursor-pointer hebrew-prayer transition-all ${category==='scroll' ? 'border-amber-600 bg-amber-600 text-white shadow-lg' : 'border-white/15 bg-white/[0.08] text-white/60'}`}
-            >
-              ✨ פירוש השם
-            </button>
+          {/* LICENSE TYPE INDICATOR */}
+          <div className="w-full max-w-[500px] px-5 mt-2">
+            <div className={`w-full py-3 rounded-2xl border-2 text-[16px] font-bold text-center hebrew-prayer border-amber-600 bg-amber-600 text-white shadow-lg`}>
+              {category === 'prayer' ? '🙏 תפילות' : '✨ פירוש השם'}
+            </div>
           </div>
 
           {/* CONTROLS */}

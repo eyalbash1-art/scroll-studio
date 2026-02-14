@@ -58,6 +58,12 @@
       <option value="720">חודש</option>
     </select>
 
+    <label>סוג רישיון:</label>
+    <select id="licenseType">
+      <option value="TFILA">🙏 תפילות בלבד</option>
+      <option value="SHEM">✨ פירוש השם בלבד</option>
+    </select>
+
     <button class="btn-generate" onclick="generateKey()">✨ צור מפתח רישיון</button>
 
     <div id="result" style="display:none"></div>
@@ -77,6 +83,7 @@
       const eventName = document.getElementById('eventName').value.trim() || 'אירוע';
       const startDateStr = document.getElementById('startDate').value;
       const durationHours = parseInt(document.getElementById('duration').value);
+      const licenseType = document.getElementById('licenseType').value;
 
       if (!startDateStr) { alert('בחרו תאריך התחלה'); return; }
 
@@ -93,7 +100,8 @@
       let code = '';
       for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
 
-      const key = `TFILA-${fmt(startDate)}-${fmt(endDate)}-${code}`;
+      const typeLabel = licenseType === 'TFILA' ? '🙏 תפילות' : '✨ פירוש השם';
+      const key = `${licenseType}-${fmt(startDate)}-${fmt(endDate)}-${code}`;
 
       // Show result
       const resultDiv = document.getElementById('result');
@@ -103,6 +111,7 @@
         <div class="result-key" id="keyText">${key}</div>
         <div class="result-info">
           📌 ${eventName}<br>
+          🏷️ ${typeLabel}<br>
           📅 ${startDate.toLocaleDateString('he-IL')} עד ${endDate.toLocaleDateString('he-IL')}<br>
           ⏱️ ${durationHours} שעות
         </div>
