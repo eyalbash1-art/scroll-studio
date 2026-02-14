@@ -707,10 +707,9 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       const [view, setView] = useState('home');
       const [eventLine, setEventLine] = useState(() => { try { return localStorage.getItem('tfila_event_line') || ''; } catch(e) { return ''; } });
       const [eventLocked, setEventLocked] = useState(() => { try { return localStorage.getItem('tfila_event_locked') === 'true'; } catch(e) { return false; } });
-      const emptyRow = () => ({name:'', gender:'male'});
+      const emptyRow = () => ({name:'', gender:'male', topic:'love'});
       const [rows, setRows] = useState([emptyRow(),emptyRow(),emptyRow(),emptyRow(),emptyRow()]);
       const [activeCount, setActiveCount] = useState(1);
-      const [topic, setTopic] = useState('love');
 
       const updateRow = (idx, field, value) => {
         setRows(prev => prev.map((r,i) => i===idx ? {...r, [field]: field==='name' ? value.replace(/[^א-ת\s]/g,'') : value} : r));
@@ -740,7 +739,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       const CardComponent = category === 'prayer' ? PrayerCard : ScrollCard;
       const activeRows = rows.slice(0, activeCount);
       const getCardProps = (row, idx) => category === 'prayer'
-        ? { name: row.name || 'השם שלך', gender: row.gender, topic, eventLine, variantIndex: idx }
+        ? { name: row.name || 'השם שלך', gender: row.gender, topic: row.topic, eventLine, variantIndex: idx }
         : { name: row.name || 'השם שלך', gender: row.gender, eventLine, variantIndex: idx };
 
       return (
@@ -836,33 +835,29 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
             </div>
           </div>
 
-          {/* TOPIC SELECTOR - only for prayers */}
-          {category === 'prayer' && (
-            <div className="w-full max-w-[700px] px-5 mt-3">
-              <select value={topic} onChange={(e) => setTopic(e.target.value)}
-                className="w-full py-[12px] px-[16px] rounded-2xl border border-white/15 bg-[#1a1a1a] text-white text-[15px] font-bold text-center outline-none focus:border-amber-500 transition-all hebrew-prayer">
-                {TOPIC_OPTIONS.map(t => (
-                  <option key={t.key} value={t.key} style={{background:'#1a1a1a',color:'white'}}>{t.emoji} {t.label}</option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* NAME INPUT ROWS */}
-          <div className="w-full max-w-[700px] px-5 mt-3 flex flex-col gap-2">
+          {/* NAME INPUT ROWS — each with name, gender, and topic (for prayers) */}
+          <div className="w-full max-w-[700px] px-5 mt-3 flex flex-col gap-3">
             {activeRows.map((row, idx) => (
-              <div key={idx} className="flex gap-2 items-center">
-                <span className="text-amber-500/50 text-[13px] font-bold w-5">{idx+1}</span>
+              <div key={idx} className="flex flex-wrap gap-2 items-center bg-white/[0.03] border border-white/[0.06] rounded-xl p-2">
+                <span className="text-amber-500/50 text-[14px] font-bold w-5 text-center">{idx+1}</span>
                 <input
                   type="text" value={row.name}
                   onChange={(e) => updateRow(idx, 'name', e.target.value)}
-                  placeholder="הקלידו שם" maxLength={15}
-                  className="flex-1 py-[10px] px-[14px] rounded-xl border border-white/15 bg-white/[0.08] text-white text-[16px] font-bold text-center outline-none focus:border-amber-500 transition-all hebrew-prayer"
+                  placeholder="שם" maxLength={15}
+                  className="flex-1 min-w-[120px] py-[10px] px-[14px] rounded-xl border border-white/15 bg-white/[0.08] text-white text-[16px] font-bold text-center outline-none focus:border-amber-500 transition-all hebrew-prayer"
                 />
                 <button onClick={() => updateRow(idx, 'gender', row.gender==='male'?'female':'male')}
-                  className="px-3 py-[10px] rounded-xl border border-white/15 bg-white/[0.06] text-white text-[13px] font-bold hebrew-prayer transition-all hover:bg-white/10 whitespace-nowrap">
+                  className={`px-3 py-[10px] rounded-xl border text-[13px] font-bold hebrew-prayer transition-all whitespace-nowrap ${row.gender==='male'?'border-blue-500/40 bg-blue-500/10 text-blue-300':'border-pink-500/40 bg-pink-500/10 text-pink-300'}`}>
                   {row.gender==='male'?'👤 זכר':'👤 נקבה'}
                 </button>
+                {category === 'prayer' && (
+                  <select value={row.topic} onChange={(e) => updateRow(idx, 'topic', e.target.value)}
+                    className="py-[10px] px-[10px] rounded-xl border border-white/15 bg-[#1a1a1a] text-white text-[12px] font-bold outline-none focus:border-amber-500 transition-all hebrew-prayer">
+                    {TOPIC_OPTIONS.map(t => (
+                      <option key={t.key} value={t.key} style={{background:'#1a1a1a',color:'white'}}>{t.emoji} {t.label}</option>
+                    ))}
+                  </select>
+                )}
               </div>
             ))}
           </div>
@@ -882,7 +877,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
           <button
             onClick={() => {
               activeRows.forEach((row, idx) => {
-                if (row.name.trim()) logPrint(licenseKey, eventLine || 'אירוע', row.name, row.gender, category, topic, eventLine);
+                if (row.name.trim()) logPrint(licenseKey, eventLine || 'אירוע', row.name, row.gender, category, row.topic || '', eventLine);
               });
               window.print();
             }}
