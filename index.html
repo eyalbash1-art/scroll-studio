@@ -439,7 +439,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
     const QR_URL = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=3d2b1f&bgcolor=f0debb&data=https://eyalbash1-art.github.io/scroll-studio/qr.html";
 
     /* ===== SCROLL CARD ===== */
-    const ScrollCard = ({ name, gender, mode = 'a4' }) => {
+    const ScrollCard = ({ name, gender, mode = 'a4', eventLine = '' }) => {
       const cleanName = name.replace(/\s/g, '');
       const len = cleanName.length;
       const displayName = cleanName.split('').join('  ');
@@ -476,6 +476,11 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
             }}>
               {blessing}
             </div>
+            {eventLine && (
+              <div className="scroll-text hebrew-prayer" style={{ fontSize: '8px', color:'#6b4f2e', fontWeight:700, marginTop: '8px', letterSpacing:'0.5px', opacity:0.8 }}>
+                {eventLine}
+              </div>
+            )}
           </div>
           <img className="print-qr" src={QR_URL} alt="QR" style={{ position:'absolute', bottom:'18%', left:'8%', width:'10%', aspectRatio:'1/1', borderRadius:'2px' }} />
         </div>
@@ -532,7 +537,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
     ];
 
     /* ===== PRAYER CARD ===== */
-    const PrayerCard = ({ name, gender, topic, mode = 'a4' }) => {
+    const PrayerCard = ({ name, gender, topic, mode = 'a4', eventLine = '' }) => {
       const prayer = PRAYERS[topic]?.[gender] || PRAYERS.love.male;
       const title = TOPIC_TITLES[topic] || 'תפילה';
 
@@ -563,6 +568,11 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
             }}>
               {prayer.join('\n')}
             </div>
+            {eventLine && (
+              <div className="scroll-text hebrew-prayer" style={{ fontSize: '8px', color:'#6b4f2e', fontWeight:700, marginTop: '8px', letterSpacing:'0.5px', opacity:0.8 }}>
+                {eventLine}
+              </div>
+            )}
           </div>
           <img className="print-qr" src={QR_URL} alt="QR" style={{ position:'absolute', bottom:'18%', left:'8%', width:'10%', aspectRatio:'1/1', borderRadius:'2px' }} />
         </div>
@@ -638,9 +648,22 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       const [licenseKey, setLicenseKey] = useState(() => { try { return localStorage.getItem(LICENSE_STORAGE_KEY) || ''; } catch(e) { return ''; } });
       const [isLicensed, setIsLicensed] = useState(() => { try { const s = localStorage.getItem(LICENSE_STORAGE_KEY); return s ? validateLicense(s).valid : false; } catch(e) { return false; } });
       const [view, setView] = useState('home');
+      const [eventLine, setEventLine] = useState(() => { try { return localStorage.getItem('tfila_event_line') || ''; } catch(e) { return ''; } });
+      const [eventLocked, setEventLocked] = useState(() => { try { return localStorage.getItem('tfila_event_locked') === 'true'; } catch(e) { return false; } });
       const [userName, setUserName] = useState('');
       const [gender, setGender] = useState('male');
       const [topic, setTopic] = useState('love');
+
+      const lockEvent = () => {
+        if (eventLine.trim()) {
+          setEventLocked(true);
+          try { localStorage.setItem('tfila_event_line', eventLine); localStorage.setItem('tfila_event_locked', 'true'); } catch(e) {}
+        }
+      };
+      const unlockEvent = () => {
+        setEventLocked(false);
+        try { localStorage.setItem('tfila_event_locked', 'false'); } catch(e) {}
+      };
 
       const handleLogin = (key) => { setLicenseKey(key); setIsLicensed(true); };
       const handleLogout = () => { setLicenseKey(''); setIsLicensed(false); setView('home'); try { localStorage.removeItem(LICENSE_STORAGE_KEY); } catch(e) {} };
@@ -654,8 +677,8 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
 
       const CardComponent = category === 'prayer' ? PrayerCard : ScrollCard;
       const cardProps = category === 'prayer'
-        ? { name: userName || 'השם שלך', gender, topic }
-        : { name: userName || 'השם שלך', gender };
+        ? { name: userName || 'השם שלך', gender, topic, eventLine }
+        : { name: userName || 'השם שלך', gender, eventLine };
 
       return (
         <div className="min-h-screen bg-[#0a0a0a] text-white flex flex-col items-center" style={{ direction:'rtl' }}>
@@ -710,6 +733,32 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
             <div className={`w-full py-3 rounded-2xl border-2 text-[16px] font-bold text-center hebrew-prayer border-amber-600 bg-amber-600 text-white shadow-lg`}>
               {category === 'prayer' ? '🙏 תפילות' : '✨ פירוש השם'}
             </div>
+          </div>
+
+          {/* EVENT DEDICATION LINE */}
+          <div className="w-full max-w-[500px] px-5 mt-3">
+            {!eventLocked ? (
+              <div className="flex flex-col gap-2">
+                <label className="text-[11px] font-bold text-amber-200/60 hebrew-prayer text-center">📌 הקדשה לאירוע (מופיע על כל קלף)</label>
+                <input
+                  type="text"
+                  value={eventLine}
+                  onChange={(e) => setEventLine(e.target.value)}
+                  placeholder='למשל: תודה שהשתתפתם בחתונה של דני ואירית 22.12.23'
+                  className="w-full py-[12px] px-[16px] rounded-2xl border border-amber-500/30 bg-amber-500/[0.08] text-white text-[14px] font-bold text-center outline-none focus:border-amber-500 transition-all hebrew-prayer"
+                />
+                <button onClick={lockEvent} disabled={!eventLine.trim()}
+                  className="w-full py-3 rounded-xl font-bold text-sm text-white hebrew-prayer transition-all active:scale-95 disabled:opacity-30"
+                  style={{background:'linear-gradient(135deg, #16a34a, #15803d)'}}>
+                  ✓ נעל הקדשה
+                </button>
+              </div>
+            ) : (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl px-4 py-3 flex justify-between items-center">
+                <span className="text-amber-200 text-[13px] font-bold hebrew-prayer">📌 {eventLine}</span>
+                <button onClick={unlockEvent} className="text-white/40 hover:text-white text-[11px] font-bold hebrew-prayer">✏️ שנה</button>
+              </div>
+            )}
           </div>
 
           {/* CONTROLS */}
