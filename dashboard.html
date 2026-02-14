@@ -191,7 +191,8 @@
     // ===== SUPABASE CONFIG =====
     const SUPABASE_URL = 'https://rdzexiqbkzsjyvzigwad.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJkemV4aXFia3pzanl2emlnd2FkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExMDEzMDQsImV4cCI6MjA4NjY3NzMwNH0.oJR662SoToF5gUS2uX6NV-R8hZGg162412W4XNtpduU';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const { createClient } = window.supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let isLoggedIn = false;
 
@@ -201,7 +202,8 @@
       const pass = document.getElementById('adminPass').value;
       document.getElementById('loginError').textContent = '';
 
-      const { data, error } = await supabase
+      try {
+      const { data, error } = await sb
         .from('admin_users')
         .select('*')
         .eq('username', user)
@@ -214,6 +216,7 @@
       }
 
       isLoggedIn = true;
+      } catch(e) { document.getElementById('loginError').textContent = '❌ שגיאת חיבור: ' + e.message; return; }
       sessionStorage.setItem('admin_logged', 'true');
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('dashboard').style.display = 'block';
@@ -250,23 +253,23 @@
     // ===== LOAD DASHBOARD DATA =====
     async function loadDashboard() {
       // Total keys
-      const { count: totalKeys } = await supabase.from('license_keys').select('*', { count: 'exact', head: true });
+      const { count: totalKeys } = await sb.from('license_keys').select('*', { count: 'exact', head: true });
       document.getElementById('statTotalKeys').textContent = totalKeys || 0;
 
       // Active events (keys valid now)
       const now = new Date().toISOString();
-      const { count: activeEvents } = await supabase.from('license_keys').select('*', { count: 'exact', head: true })
+      const { count: activeEvents } = await sb.from('license_keys').select('*', { count: 'exact', head: true })
         .lte('start_date', now).gte('end_date', now).eq('is_active', true);
       document.getElementById('statActiveEvents').textContent = activeEvents || 0;
 
       // Today's prints
       const todayStart = new Date(); todayStart.setHours(0,0,0,0);
-      const { count: todayPrints } = await supabase.from('print_logs').select('*', { count: 'exact', head: true })
+      const { count: todayPrints } = await sb.from('print_logs').select('*', { count: 'exact', head: true })
         .gte('created_at', todayStart.toISOString());
       document.getElementById('statTodayPrints').textContent = todayPrints || 0;
 
       // Total prints
-      const { count: totalPrints } = await supabase.from('print_logs').select('*', { count: 'exact', head: true });
+      const { count: totalPrints } = await sb.from('print_logs').select('*', { count: 'exact', head: true });
       document.getElementById('statTotalPrints').textContent = totalPrints || 0;
 
       // Load live log
@@ -275,7 +278,7 @@
 
     // ===== LIVE LOG =====
     async function loadLiveLog() {
-      const { data } = await supabase.from('print_logs').select('*').order('created_at', { ascending: false }).limit(50);
+      const { data } = await sb.from('print_logs').select('*').order('created_at', { ascending: false }).limit(50);
       renderLiveLog(data || []);
     }
 
@@ -295,13 +298,13 @@
 
     // ===== REALTIME =====
     function startRealtime() {
-      supabase.channel('print_logs_changes')
+      sb.channel('print_logs_changes')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'print_logs' }, (payload) => {
           loadDashboard(); // Refresh stats + log
         })
         .subscribe();
 
-      supabase.channel('license_keys_changes')
+      sb.channel('license_keys_changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'license_keys' }, () => {
           loadDashboard();
         })
@@ -310,12 +313,12 @@
 
     // ===== KEYS TABLE =====
     async function loadKeys() {
-      const { data } = await supabase.from('license_keys').select('*').order('created_at', { ascending: false });
+      const { data } = await sb.from('license_keys').select('*').order('created_at', { ascending: false });
       const el = document.getElementById('keysTable');
       if (!data || !data.length) { el.innerHTML = '<tr><td colspan="6" class="empty-state">אין מפתחות</td></tr>'; return; }
 
       // Get print counts per key
-      const { data: prints } = await supabase.from('print_logs').select('license_key');
+      const { data: prints } = await sb.from('print_logs').select('license_key');
       const printCounts = {};
       (prints || []).forEach(p => { printCounts[p.license_key] = (printCounts[p.license_key] || 0) + 1; });
 
@@ -354,7 +357,7 @@
       let code = ''; for (let i=0;i<4;i++) code += chars[Math.floor(Math.random()*chars.length)];
       const key = `${type}-${fmt(startDate)}-${fmt(endDate)}-${code}`;
 
-      const { error } = await supabase.from('license_keys').insert({
+      const { error } = await sb.from('license_keys').insert({
         key, type, event_name: eventName,
         start_date: startDate.toISOString(),
         end_date: endDate.toISOString(),
@@ -379,7 +382,7 @@
 
     // ===== HISTORY =====
     async function loadHistory() {
-      const { data } = await supabase.from('print_logs').select('*').order('created_at', { ascending: false }).limit(200);
+      const { data } = await sb.from('print_logs').select('*').order('created_at', { ascending: false }).limit(200);
       const el = document.getElementById('historyTable');
       if (!data || !data.length) { el.innerHTML = '<tr><td colspan="5" class="empty-state">אין היסטוריה</td></tr>'; return; }
       el.innerHTML = data.map(l => {
