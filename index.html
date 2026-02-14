@@ -47,38 +47,53 @@
     .animate-float { animation: float 6s ease-in-out infinite; }
     /* ===== PRINT STYLES ===== */
     @media print {
-      /* Hide everything except the card */
+      @page { size: 100mm 150mm; margin: 0; }
+
+      /* Reset body */
       body { background: white !important; margin: 0 !important; padding: 0 !important; }
-      header, footer, nav, button, select, input, label, a,
-      .no-print, .watermark-overlay, .lock-badge { display: none !important; }
-      
-      /* Hide the card background image — real parchment paper is in the printer */
+
+      /* Hide everything by default */
+      body * { visibility: hidden !important; }
+
+      /* Show only the print area and its contents */
+      .print-area,
+      .print-area *,
+      .card-container,
+      .card-container *,
+      .card-text-layer,
+      .card-text-layer * {
+        visibility: visible !important;
+      }
+
+      /* Hide the background image — real parchment is in the printer */
       .card-bg { display: none !important; }
-      
-      /* Make the card container fill the page at exact size */
+
+      /* Position the print area to fill the page */
+      .print-area {
+        position: fixed !important; top: 0 !important; left: 0 !important;
+        width: 100mm !important; height: 150mm !important;
+        margin: 0 !important; padding: 0 !important;
+        overflow: hidden !important;
+      }
+
+      /* Card container fills the print area */
       .card-container {
         width: 100mm !important; height: 150mm !important;
         position: relative !important; overflow: hidden !important;
         border-radius: 0 !important; box-shadow: none !important;
         aspect-ratio: auto !important; margin: 0 !important; padding: 0 !important;
       }
-      
-      /* Text layer stays in same position, black text only */
+
+      /* Text layer — same position, black text */
       .card-text-layer {
         position: absolute !important;
         top: 14% !important; left: 14% !important; right: 14% !important; bottom: 24% !important;
         display: flex !important; flex-direction: column !important;
         justify-content: center !important; align-items: center !important;
-        text-align: center !important; color: #000 !important;
+        text-align: center !important;
       }
       .card-text-layer * { color: #000 !important; text-shadow: none !important; }
       .card-text-layer .divider-line { background: #000 !important; }
-
-      /* Hide all non-card elements */
-      .min-h-screen > *:not(.print-area) { display: none !important; }
-      .print-area { display: block !important; width: 100mm !important; height: 150mm !important; margin: 0 !important; padding: 0 !important; }
-
-      @page { size: 100mm 150mm; margin: 0; }
     }
 
     /* ===== ANTI-COPY PROTECTIONS ===== */
