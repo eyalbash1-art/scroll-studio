@@ -454,7 +454,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
     };
 
     /* ===== QR CODE URL ===== */
-    const QR_URL = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=3d2b1f&bgcolor=f0debb&data=https://eyalbash1-art.github.io/scroll-studio/qr.html";
+    const QR_URL = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=3d2b1f&bgcolor=f0debb&data=https://scroll-studio.vercel.app/qr.html";
 
     /* ===== SCROLL CARD ===== */
     const ScrollCard = ({ name, gender, mode = 'a4', eventLine = '', variantIndex = 0 }) => {
@@ -870,7 +870,8 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
             onClick={() => {
               const cards = [];
               activeRows.forEach((row, idx) => {
-                const name = row.name.trim() || 'השם שלך';
+                const name = row.name.trim();
+                if (!name) return;
                 logPrint(licenseKey, eventLine || 'אירוע', name, row.gender, category, row.topic || '', eventLine);
                 if (category === 'scroll') {
                   const cleanName = name.replace(/\s/g,'');
@@ -898,11 +899,15 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
               localStorage.setItem('tfila_print_data', JSON.stringify({ cards }));
               window.open('print.html', '_blank');
             }}
-            className="w-full max-w-[700px] mt-4 mx-5 py-[18px] rounded-3xl border-none text-[20px] font-black text-white cursor-pointer hebrew-prayer hover:opacity-90 transition-all active:scale-95"
+            disabled={!activeRows.some(r => r.name.trim())}
+            className={`w-full max-w-[700px] mt-4 mx-5 py-[18px] rounded-3xl border-none text-[20px] font-black text-white cursor-pointer hebrew-prayer transition-all active:scale-95 ${activeRows.some(r => r.name.trim()) ? 'hover:opacity-90' : 'opacity-40 cursor-not-allowed'}`}
             style={{background:'linear-gradient(135deg, #b45309, #92400e)'}}
           >
-            🖨️ הדפסת {activeCount > 1 ? activeCount + ' קלפים' : 'הקלף'}
+            🖨️ הדפסת {activeRows.filter(r => r.name.trim()).length || 0} {activeRows.filter(r => r.name.trim()).length === 1 ? 'קלף' : 'קלפים'}
           </button>
+          {!activeRows.some(r => r.name.trim()) && (
+            <div className="text-center text-[12px] text-red-400/60 mt-2 hebrew-prayer">הכניסו לפחות שם אחד כדי להדפיס</div>
+          )}
 
           {/* STUDIO FOOTER */}
           <footer className="w-full bg-black/90 text-white py-8 px-6 text-center border-t border-white/5 mt-8">

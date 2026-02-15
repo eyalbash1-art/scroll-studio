@@ -42,7 +42,7 @@
   <div id="pages"></div>
 
   <script>
-    const qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=000000&bgcolor=ffffff&data=https://eyalbash1-art.github.io/scroll-studio/qr.html';
+    const qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=000000&bgcolor=ffffff&data=https://scroll-studio.vercel.app/qr.html';
     
     // XSS protection
     function esc(str) { const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
@@ -95,9 +95,13 @@
       pagesEl.innerHTML = html;
       document.getElementById('loading').textContent = '✅ ' + data.cards.length + ' קלפים מוכנים — מדפיס...';
       
-      // Auto print after fonts load
+      // Auto print after fonts load, then clean up
       document.fonts.ready.then(() => {
-        setTimeout(() => { window.print(); }, 600);
+        setTimeout(() => {
+          window.print();
+          // Clean up print data after printing
+          try { localStorage.removeItem('tfila_print_data'); } catch(e) {}
+        }, 600);
       });
 
     } catch(e) {

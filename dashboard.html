@@ -199,6 +199,14 @@
 
     let isLoggedIn = false;
 
+    // Simple hash function for password comparison
+    async function hashPassword(pass) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(pass + '_tfila_salt_2026');
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
     // ===== ADMIN AUTH =====
     async function adminLogin() {
       const user = document.getElementById('adminUser').value.trim();
@@ -206,11 +214,12 @@
       document.getElementById('loginError').textContent = '';
 
       try {
+      const passHash = await hashPassword(pass);
       const { data, error } = await sb
         .from('admin_users')
         .select('*')
         .eq('username', user)
-        .eq('password_hash', pass)
+        .eq('password_hash', passHash)
         .single();
 
       if (error || !data) {
@@ -219,6 +228,7 @@
       }
 
       isLoggedIn = true;
+      sessionStorage.setItem('admin_token', passHash);
       } catch(e) { document.getElementById('loginError').textContent = '❌ שגיאת חיבור: ' + e.message; return; }
       sessionStorage.setItem('admin_logged', 'true');
       document.getElementById('loginScreen').style.display = 'none';
@@ -229,19 +239,26 @@
 
     function adminLogout() {
       isLoggedIn = false;
-      sessionStorage.removeItem('admin_logged');
+      sessionStorage.removeItem('admin_token');
       document.getElementById('loginScreen').style.display = 'flex';
       document.getElementById('dashboard').style.display = 'none';
     }
 
-    // Auto-login if session exists
-    if (sessionStorage.getItem('admin_logged') === 'true') {
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('dashboard').style.display = 'block';
-      isLoggedIn = true;
-      loadDashboard();
-      startRealtime();
-    }
+    // Auto-login: verify token against DB
+    (async () => {
+      const token = sessionStorage.getItem('admin_token');
+      if (!token) return;
+      try {
+        const { data } = await sb.from('admin_users').select('id').eq('password_hash', token).single();
+        if (data) {
+          document.getElementById('loginScreen').style.display = 'none';
+          document.getElementById('dashboard').style.display = 'block';
+          isLoggedIn = true;
+          loadDashboard();
+          startRealtime();
+        } else { sessionStorage.removeItem('admin_token'); }
+      } catch(e) { sessionStorage.removeItem('admin_token'); }
+    })();
 
     // ===== TABS =====
     function switchTab(tab) {
