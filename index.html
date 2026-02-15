@@ -850,34 +850,49 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
           {/* PRINT BUTTON */}
           <button
             onClick={() => {
-              // Build print pages
               const container = document.getElementById('printContainer');
               container.innerHTML = '';
+              const qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=000000&bgcolor=ffffff&data=https://eyalbash1-art.github.io/scroll-studio/qr.html';
               activeRows.forEach((row, idx) => {
                 if (!row.name.trim()) return;
                 logPrint(licenseKey, eventLine || 'אירוע', row.name, row.gender, category, row.topic || '', eventLine);
-                // Get the rendered card HTML
-                const cardEl = document.querySelectorAll('.print-card')[idx];
-                if (!cardEl) return;
-                const page = document.createElement('div');
-                page.className = 'print-page';
-                // Clone text layer only (no background image)
-                const textLayer = cardEl.querySelector('.card-text-layer');
-                if (textLayer) {
-                  const clone = textLayer.cloneNode(true);
-                  clone.style.position = 'absolute';
-                  clone.style.top = '10%'; clone.style.left = '8%'; clone.style.right = '8%'; clone.style.bottom = '18%';
-                  clone.style.display = 'flex'; clone.style.flexDirection = 'column';
-                  clone.style.justifyContent = 'center'; clone.style.alignItems = 'center';
-                  clone.style.textAlign = 'center';
-                  page.appendChild(clone);
+                const name = row.name.trim();
+                let lines = '';
+                if (category === 'scroll') {
+                  const cleanName = name.replace(/\s/g,'');
+                  const displayName = cleanName.split('').join('  ');
+                  const interp = getInterpretationLine(name, idx);
+                  const bless = getSpiritualBlessing(name, row.gender, idx);
+                  lines = `
+                    <div style="font-size:10px;color:#000;letter-spacing:2px;margin-bottom:6px">באותיות שמך הושם סימן מהשם</div>
+                    <div style="width:60px;height:1px;background:#000;margin:6px auto"></div>
+                    <div style="font-size:36px;font-weight:900;color:#000;margin:6px 0;letter-spacing:8px">${displayName}</div>
+                    <div style="font-size:12px;font-weight:700;color:#000;margin:4px 0">${interp}</div>
+                    <div style="width:40px;height:1px;background:#000;margin:6px auto"></div>
+                    <div style="font-size:10px;font-weight:400;color:#000;line-height:1.7;white-space:pre-line">${bless}</div>
+                  `;
+                } else {
+                  const basePrayer = (PRAYERS[row.topic]?.[row.gender] || PRAYERS.love.male);
+                  const prayer = idx === 0 ? basePrayer : (() => { const l=[...basePrayer]; const f=l[0]; const e=l[l.length-1]; const m=l.slice(1,-1); const r=[...m.slice(idx%m.length),...m.slice(0,idx%m.length)]; return [f,...r,e]; })();
+                  const title = TOPIC_TITLES[row.topic] || 'תפילה';
+                  lines = `
+                    <div style="font-size:14px;font-weight:900;color:#000;letter-spacing:2px;margin-bottom:6px">${title}</div>
+                    <div style="width:60px;height:1px;background:#000;margin:6px auto"></div>
+                    <div style="font-size:24px;font-weight:900;color:#000;margin:6px 0;letter-spacing:4px">${name}</div>
+                    <div style="width:40px;height:1px;background:#000;margin:6px auto"></div>
+                    <div style="font-size:10px;font-weight:700;color:#000;line-height:1.7;white-space:pre-line">${prayer.join('\n')}</div>
+                  `;
                 }
-                // Add QR
-                const qr = document.createElement('img');
-                qr.src = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=000000&bgcolor=ffffff&data=https://eyalbash1-art.github.io/scroll-studio/qr.html';
-                qr.className = 'qr-print';
-                page.appendChild(qr);
-                container.appendChild(page);
+                const evLine = eventLine ? `<div style="font-size:7px;color:#000;margin-top:6px;opacity:0.7">${eventLine}</div>` : '';
+                container.innerHTML += `
+                  <div class="print-page" style="width:100mm;height:150mm;position:relative;page-break-after:always;overflow:hidden">
+                    <div style="position:absolute;top:10%;left:8%;right:8%;bottom:18%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;font-family:'Frank Ruhl Libre',serif">
+                      ${lines}
+                      ${evLine}
+                    </div>
+                    <img src="${qrSrc}" style="position:absolute;bottom:8%;left:5%;width:12mm;height:12mm" />
+                  </div>
+                `;
               });
               setTimeout(() => window.print(), 300);
             }}
