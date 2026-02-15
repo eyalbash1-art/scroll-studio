@@ -194,6 +194,9 @@
     const { createClient } = window.supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // XSS protection
+    function esc(str) { const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+
     let isLoggedIn = false;
 
     // ===== ADMIN AUTH =====
@@ -289,7 +292,7 @@
         const time = new Date(l.created_at).toLocaleTimeString('he-IL', { hour:'2-digit', minute:'2-digit' });
         const date = new Date(l.created_at).toLocaleDateString('he-IL');
         return `<div class="log-item">
-          <div><span class="log-name">${l.printed_name}</span> <span class="log-event">— ${l.event_name}</span></div>
+          <div><span class="log-name">${esc(l.printed_name)}</span> <span class="log-event">— ${esc(l.event_name)}</span></div>
           <div><span class="badge ${l.category==='prayer'?'badge-tfila':'badge-shem'}">${l.category==='prayer'?'תפילה':'שם'}</span></div>
           <div class="log-time">${time} ${date}</div>
         </div>`;
@@ -329,9 +332,9 @@
         const isActive = now >= start && now <= end && k.is_active;
         const isExpired = now > end;
         return `<tr>
-          <td style="font-family:monospace;font-size:11px;direction:ltr;color:#f59e0b">${k.key}</td>
+          <td style="font-family:monospace;font-size:11px;direction:ltr;color:#f59e0b">${esc(k.key)}</td>
           <td><span class="badge ${k.type==='TFILA'?'badge-tfila':'badge-shem'}">${k.type==='TFILA'?'תפילות':'שמות'}</span></td>
-          <td>${k.event_name}</td>
+          <td>${esc(k.event_name)}</td>
           <td style="font-size:11px">${start.toLocaleDateString('he-IL')} — ${end.toLocaleDateString('he-IL')}</td>
           <td><span class="badge ${isActive?'badge-active':isExpired?'badge-expired':'badge-expired'}">${isActive?'פעיל':isExpired?'פג תוקף':'לא התחיל'}</span></td>
           <td style="font-weight:900;color:#f59e0b">${printCounts[k.key] || 0}</td>
@@ -373,7 +376,7 @@
         resultEl.innerHTML = `
           <div style="color:rgba(255,255,255,0.6);font-weight:700">✅ מפתח נוצר!</div>
           <div class="gen-key">${key}</div>
-          <div style="font-size:12px;color:rgba(255,255,255,0.4)">📌 ${eventName} | ⏱️ ${hours} שעות</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.4)">📌 ${esc(eventName)} | ⏱️ ${hours} שעות</div>
           <button onclick="navigator.clipboard.writeText('${key}').then(()=>alert('הועתק!'))" style="margin-top:10px;padding:10px 20px;border:1px solid rgba(255,255,255,0.15);background:none;color:white;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:700">📋 העתק מפתח</button>
         `;
         loadDashboard();
@@ -389,8 +392,8 @@
         const time = new Date(l.created_at).toLocaleString('he-IL');
         return `<tr>
           <td style="font-size:11px;font-family:monospace">${time}</td>
-          <td style="font-weight:900;color:#f59e0b">${l.printed_name}</td>
-          <td>${l.event_name}</td>
+          <td style="font-weight:900;color:#f59e0b">${esc(l.printed_name)}</td>
+          <td>${esc(l.event_name)}</td>
           <td><span class="badge ${l.category==='prayer'?'badge-tfila':'badge-shem'}">${l.category==='prayer'?'תפילה':'שם'}</span></td>
           <td>${l.topic || '—'}</td>
         </tr>`;

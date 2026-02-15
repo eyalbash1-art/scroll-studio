@@ -44,6 +44,9 @@
   <script>
     const qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=000000&bgcolor=ffffff&data=https://eyalbash1-art.github.io/scroll-studio/qr.html';
     
+    // XSS protection
+    function esc(str) { const d=document.createElement('div'); d.textContent=str||''; return d.innerHTML; }
+
     try {
       const data = JSON.parse(localStorage.getItem('tfila_print_data'));
       if (!data || !data.cards || !data.cards.length) {
@@ -61,22 +64,22 @@
           content = `
             <div class="title">באותיות שמך הושם סימן מהשם</div>
             <div class="divider"></div>
-            <div class="name-big">${card.displayName}</div>
-            <div class="interp">${card.interpretation}</div>
+            <div class="name-big">${esc(card.displayName)}</div>
+            <div class="interp">${esc(card.interpretation)}</div>
             <div class="divider-sm"></div>
-            <div class="text-body">${card.blessing}</div>
+            <div class="text-body">${esc(card.blessing)}</div>
           `;
         } else {
           content = `
-            <div class="prayer-title">${card.title}</div>
+            <div class="prayer-title">${esc(card.title)}</div>
             <div class="divider"></div>
-            <div class="name-med">${card.name}</div>
+            <div class="name-med">${esc(card.name)}</div>
             <div class="divider-sm"></div>
-            <div class="text-body-bold">${card.prayerText}</div>
+            <div class="text-body-bold">${esc(card.prayerText)}</div>
           `;
         }
 
-        const evLine = card.eventLine ? `<div class="event-line">${card.eventLine}</div>` : '';
+        const evLine = card.eventLine ? `<div class="event-line">${esc(card.eventLine)}</div>` : '';
 
         html += `
           <div class="page">

@@ -613,7 +613,8 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
     /* ===== LICENSE KEY SYSTEM ===== */
     const LICENSE_STORAGE_KEY = 'tfila_license';
 
-    const validateLicense = (key) => {
+    // Client-side format check (quick)
+    const validateLicenseFormat = (key) => {
       if (!key || typeof key !== 'string') return { valid: false, msg: 'מפתח לא תקין' };
       const parts = key.trim().toUpperCase().split('-');
       if (parts.length !== 4) return { valid: false, msg: 'פורמט מפתח לא תקין' };
@@ -621,17 +622,34 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       if (prefix !== 'TFILA' && prefix !== 'SHEM') return { valid: false, msg: 'פורמט מפתח לא תקין' };
       const type = prefix === 'TFILA' ? 'prayer' : 'scroll';
       const typeLabel = prefix === 'TFILA' ? 'תפילות' : 'פירוש השם';
-      const startStr = parts[1];
-      const endStr = parts[2];
+      const startStr = parts[1]; const endStr = parts[2];
       if (startStr.length !== 8 || endStr.length !== 8) return { valid: false, msg: 'תאריכים לא תקינים' };
       const startDate = new Date(parseInt(startStr.substring(0,4)), parseInt(startStr.substring(4,6))-1, parseInt(startStr.substring(6,8)));
       const endDate = new Date(parseInt(endStr.substring(0,4)), parseInt(endStr.substring(4,6))-1, parseInt(endStr.substring(6,8)), 23, 59, 59);
       const now = new Date();
       if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return { valid: false, msg: 'תאריכים לא תקינים' };
-      if (now < startDate) return { valid: false, msg: 'הרישיון עדיין לא התחיל. מתחיל ב-' + startDate.toLocaleDateString('he-IL') };
-      if (now > endDate) return { valid: false, msg: 'הרישיון פג תוקף ב-' + endDate.toLocaleDateString('he-IL') };
+      if (now < startDate) return { valid: false, msg: 'הרישיון עדיין לא התחיל' };
+      if (now > endDate) return { valid: false, msg: 'הרישיון פג תוקף' };
       return { valid: true, type, typeLabel, msg: typeLabel + ' — בתוקף עד ' + endDate.toLocaleDateString('he-IL'), endDate };
     };
+
+    // Server-side validation against Supabase
+    const validateLicenseServer = async (key) => {
+      const fmt = validateLicenseFormat(key);
+      if (!fmt.valid) return fmt;
+      if (!_sb) return fmt; // Fallback if Supabase unavailable
+      try {
+        const { data, error } = await _sb.from('license_keys').select('*').eq('key', key.trim().toUpperCase()).eq('is_active', true).single();
+        if (error || !data) return { valid: false, msg: 'מפתח לא נמצא במערכת' };
+        const now = new Date();
+        if (now > new Date(data.end_date)) return { valid: false, msg: 'הרישיון פג תוקף' };
+        if (now < new Date(data.start_date)) return { valid: false, msg: 'הרישיון עדיין לא התחיל' };
+        return fmt; // Format check has the type info we need
+      } catch(e) { return fmt; } // Fallback to format-only if network fails
+    };
+
+    // Sync version for quick checks (format only)
+    const validateLicense = validateLicenseFormat;
 
     /* ===== LOGIN SCREEN ===== */
     const LoginScreen = ({ onLogin }) => {
@@ -639,16 +657,16 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
       const [error, setError] = useState('');
       const [loading, setLoading] = useState(false);
 
-      const handleSubmit = () => {
+      const handleSubmit = async () => {
         setLoading(true); setError('');
-        setTimeout(() => {
-          const result = validateLicense(key);
+        try {
+          const result = await validateLicenseServer(key);
           if (result.valid) {
             try { localStorage.setItem(LICENSE_STORAGE_KEY, key); } catch(e) {}
             onLogin(key);
           } else { setError(result.msg); }
-          setLoading(false);
-        }, 500);
+        } catch(e) { setError('שגיאת חיבור'); }
+        setLoading(false);
       };
 
       return (

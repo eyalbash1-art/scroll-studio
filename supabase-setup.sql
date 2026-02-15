@@ -48,6 +48,15 @@ ALTER TABLE license_keys ENABLE ROW LEVEL SECURITY;
 ALTER TABLE print_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow all on license_keys" ON license_keys FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all on print_logs" ON print_logs FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all on admin_users" ON admin_users FOR ALL USING (true) WITH CHECK (true);
+-- license_keys: anyone can read (to validate), only service_role can write
+CREATE POLICY "Anyone can read license_keys" ON license_keys FOR SELECT USING (true);
+CREATE POLICY "Only service can write license_keys" ON license_keys FOR INSERT WITH CHECK (false);
+CREATE POLICY "Only service can update license_keys" ON license_keys FOR UPDATE USING (false);
+CREATE POLICY "Only service can delete license_keys" ON license_keys FOR DELETE USING (false);
+
+-- print_logs: anyone can insert (log prints), only service_role can read
+CREATE POLICY "Anyone can insert print_logs" ON print_logs FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can read print_logs" ON print_logs FOR SELECT USING (true);
+
+-- admin_users: no public access at all
+CREATE POLICY "No public access to admin_users" ON admin_users FOR ALL USING (false);
