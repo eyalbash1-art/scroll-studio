@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>הדפסה | תפילה מהשקט</title>
+  <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    @page { size: 100mm 150mm; margin: 0; }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Frank Ruhl Libre',serif; color:#000; }
+    body { background: white; }
+    .page {
+      width: 100mm; height: 150mm;
+      position: relative; overflow: hidden;
+      page-break-after: always; break-after: page;
+    }
+    .page:last-child { page-break-after: auto; break-after: auto; }
+    .content {
+      position: absolute; top: 10%; left: 8%; right: 8%; bottom: 18%;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      text-align: center;
+    }
+    .title { font-size: 10px; letter-spacing: 2px; margin-bottom: 6px; }
+    .divider { width: 60px; height: 1px; background: #000; margin: 6px auto; }
+    .divider-sm { width: 40px; height: 1px; background: #000; margin: 6px auto; }
+    .name-big { font-size: 36px; font-weight: 900; margin: 6px 0; letter-spacing: 8px; }
+    .name-med { font-size: 24px; font-weight: 900; margin: 6px 0; letter-spacing: 4px; }
+    .interp { font-size: 12px; font-weight: 700; margin: 4px 0; }
+    .prayer-title { font-size: 14px; font-weight: 900; letter-spacing: 2px; margin-bottom: 6px; }
+    .text-body { font-size: 10px; font-weight: 400; line-height: 1.7; white-space: pre-line; }
+    .text-body-bold { font-size: 10px; font-weight: 700; line-height: 1.7; white-space: pre-line; }
+    .event-line { font-size: 7px; margin-top: 6px; opacity: 0.7; }
+    .qr { position: absolute; bottom: 8%; left: 5%; width: 12mm; height: 12mm; }
+    
+    /* Loading screen - hidden when printing */
+    .loading { text-align:center; padding:40px; font-size:18px; color:#333; }
+    @media print { .loading { display: none; } }
+  </style>
+</head>
+<body>
+  <div class="loading" id="loading">⏳ מכין דפים להדפסה...</div>
+  <div id="pages"></div>
+
+  <script>
+    const qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=000000&bgcolor=ffffff&data=https://eyalbash1-art.github.io/scroll-studio/qr.html';
+    
+    try {
+      const data = JSON.parse(localStorage.getItem('tfila_print_data'));
+      if (!data || !data.cards || !data.cards.length) {
+        document.getElementById('loading').textContent = '❌ אין נתונים להדפסה';
+        throw new Error('No data');
+      }
+
+      const pagesEl = document.getElementById('pages');
+      let html = '';
+
+      data.cards.forEach(card => {
+        let content = '';
+        
+        if (card.type === 'scroll') {
+          content = `
+            <div class="title">באותיות שמך הושם סימן מהשם</div>
+            <div class="divider"></div>
+            <div class="name-big">${card.displayName}</div>
+            <div class="interp">${card.interpretation}</div>
+            <div class="divider-sm"></div>
+            <div class="text-body">${card.blessing}</div>
+          `;
+        } else {
+          content = `
+            <div class="prayer-title">${card.title}</div>
+            <div class="divider"></div>
+            <div class="name-med">${card.name}</div>
+            <div class="divider-sm"></div>
+            <div class="text-body-bold">${card.prayerText}</div>
+          `;
+        }
+
+        const evLine = card.eventLine ? `<div class="event-line">${card.eventLine}</div>` : '';
+
+        html += `
+          <div class="page">
+            <div class="content">
+              ${content}
+              ${evLine}
+            </div>
+            <img class="qr" src="${qrSrc}" />
+          </div>
+        `;
+      });
+
+      pagesEl.innerHTML = html;
+      document.getElementById('loading').textContent = '✅ ' + data.cards.length + ' קלפים מוכנים — מדפיס...';
+      
+      // Auto print after fonts load
+      document.fonts.ready.then(() => {
+        setTimeout(() => { window.print(); }, 600);
+      });
+
+    } catch(e) {
+      console.error(e);
+    }
+  </script>
+</body>
+</html>

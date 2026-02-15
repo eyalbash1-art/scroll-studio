@@ -850,57 +850,36 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
           {/* PRINT BUTTON */}
           <button
             onClick={() => {
-              const qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=000000&bgcolor=ffffff&data=https://eyalbash1-art.github.io/scroll-studio/qr.html';
-              let pages = '';
+              const cards = [];
               activeRows.forEach((row, idx) => {
                 if (!row.name.trim()) return;
                 logPrint(licenseKey, eventLine || 'אירוע', row.name, row.gender, category, row.topic || '', eventLine);
                 const name = row.name.trim();
-                let lines = '';
                 if (category === 'scroll') {
                   const cleanName = name.replace(/\s/g,'');
-                  const displayName = cleanName.split('').join('  ');
-                  const interp = getInterpretationLine(name, idx);
-                  const bless = getSpiritualBlessing(name, row.gender, idx);
-                  lines = `
-                    <div style="font-size:10px;letter-spacing:2px;margin-bottom:6px">באותיות שמך הושם סימן מהשם</div>
-                    <div style="width:60px;height:1px;background:#000;margin:6px auto"></div>
-                    <div style="font-size:36px;font-weight:900;margin:6px 0;letter-spacing:8px">${displayName}</div>
-                    <div style="font-size:12px;font-weight:700;margin:4px 0">${interp}</div>
-                    <div style="width:40px;height:1px;background:#000;margin:6px auto"></div>
-                    <div style="font-size:10px;font-weight:400;line-height:1.7;white-space:pre-line">${bless}</div>
-                  `;
+                  cards.push({
+                    type: 'scroll',
+                    name,
+                    displayName: cleanName.split('').join('  '),
+                    interpretation: getInterpretationLine(name, idx),
+                    blessing: getSpiritualBlessing(name, row.gender, idx),
+                    eventLine: eventLine || ''
+                  });
                 } else {
                   const basePrayer = (PRAYERS[row.topic]?.[row.gender] || PRAYERS.love.male);
                   const prayer = idx === 0 ? basePrayer : (() => { const l=[...basePrayer]; const f=l[0]; const e=l[l.length-1]; const m=l.slice(1,-1); const r=[...m.slice(idx%m.length),...m.slice(0,idx%m.length)]; return [f,...r,e]; })();
-                  const title = TOPIC_TITLES[row.topic] || 'תפילה';
-                  lines = `
-                    <div style="font-size:14px;font-weight:900;letter-spacing:2px;margin-bottom:6px">${title}</div>
-                    <div style="width:60px;height:1px;background:#000;margin:6px auto"></div>
-                    <div style="font-size:24px;font-weight:900;margin:6px 0;letter-spacing:4px">${name}</div>
-                    <div style="width:40px;height:1px;background:#000;margin:6px auto"></div>
-                    <div style="font-size:10px;font-weight:700;line-height:1.7;white-space:pre-line">${prayer.join('\n')}</div>
-                  `;
+                  cards.push({
+                    type: 'prayer',
+                    name,
+                    title: TOPIC_TITLES[row.topic] || 'תפילה',
+                    prayerText: prayer.join('\n'),
+                    eventLine: eventLine || ''
+                  });
                 }
-                const evLine = eventLine ? `<div style="font-size:7px;margin-top:6px;opacity:0.7">${eventLine}</div>` : '';
-                pages += `
-                  <div style="width:100mm;height:150mm;position:relative;page-break-after:always;overflow:hidden">
-                    <div style="position:absolute;top:10%;left:8%;right:8%;bottom:18%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;font-family:'Frank Ruhl Libre',serif;color:#000">
-                      ${lines}
-                      ${evLine}
-                    </div>
-                    <img src="${qrSrc}" style="position:absolute;bottom:8%;left:5%;width:12mm;height:12mm" />
-                  </div>
-                `;
               });
-              // Open print window
-              const w = window.open('','_blank');
-              w.document.write(`<!DOCTYPE html><html dir="rtl"><head>
-                <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@400;700;900&display=swap" rel="stylesheet">
-                <style>@page{size:100mm 150mm;margin:0}*{margin:0;padding:0;box-sizing:border-box;font-family:'Frank Ruhl Libre',serif;color:#000}</style>
-              </head><body>${pages}</body></html>`);
-              w.document.close();
-              setTimeout(() => { w.print(); w.close(); }, 500);
+              if (cards.length === 0) { alert('הכניסו לפחות שם אחד'); return; }
+              localStorage.setItem('tfila_print_data', JSON.stringify({ cards }));
+              window.open('print.html', '_blank');
             }}
             className="w-full max-w-[700px] mt-4 mx-5 py-[18px] rounded-3xl border-none text-[20px] font-black text-white cursor-pointer hebrew-prayer hover:opacity-90 transition-all active:scale-95"
             style={{background:'linear-gradient(135deg, #b45309, #92400e)'}}
