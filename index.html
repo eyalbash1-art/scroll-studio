@@ -852,9 +852,8 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
             onClick={() => {
               const cards = [];
               activeRows.forEach((row, idx) => {
-                if (!row.name.trim()) return;
-                logPrint(licenseKey, eventLine || 'אירוע', row.name, row.gender, category, row.topic || '', eventLine);
-                const name = row.name.trim();
+                const name = row.name.trim() || 'השם שלך';
+                logPrint(licenseKey, eventLine || 'אירוע', name, row.gender, category, row.topic || '', eventLine);
                 if (category === 'scroll') {
                   const cleanName = name.replace(/\s/g,'');
                   cards.push({
@@ -877,7 +876,7 @@ ${m?'האם אתה מקשיב':'האם את מקשיבה'} ללב שלך?
                   });
                 }
               });
-              if (cards.length === 0) { alert('הכניסו לפחות שם אחד'); return; }
+              if (cards.length === 0) return;
               localStorage.setItem('tfila_print_data', JSON.stringify({ cards }));
               window.open('print.html', '_blank');
             }}
